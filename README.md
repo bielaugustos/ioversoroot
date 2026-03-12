@@ -13,7 +13,7 @@ an intelligent agent
 
 it functions as:
 
-assistant + Mentor + Integrated Life System
+assistant + mentor + integrated Life System
 
 # example evoluri (company brandbook)
 
