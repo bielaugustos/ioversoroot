@@ -1,51 +1,41 @@
-import { useState,useEffect } from "react";
-import DailyWord from "./components/DailyWord";
-import HabitList from "./components/HabitList";
-import { saveData,loadData } from "./services/storage";
-import ProgressBar from "./components/ProgressBar";
+import { BrowserRouter,Routes,Route } from "react-router-dom";
+
+import Home from "./pages/Home";
+import Habits from "./pages/Habits";
+import Rewards from "./pages/Rewards";
+import Profile from "./pages/Profile";
+import Navebar from "./components/Navebar";
+import Chat from "./pages/Chat";
 
 export default function App(){
 
- const [points,setPoints] = useState(0);
-
- useEffect(()=>{
-
-  const savedPoints = loadData("points");
-
-  if(savedPoints){
-   setPoints(savedPoints);
-  }
-
- },[]);
-
- useEffect(()=>{
-
-  saveData("points",points);
-
- },[points]);
-
- function addPoints(){
-  setPoints(points + 10);
- }
-
  return(
 
-  <div className="app">
+  <BrowserRouter>
 
-   <header>
+   <div className="app">
 
     <h1>NEX</h1>
-    <p>Points: {points}</p>
 
-   </header>
+    <Routes>
 
-   <DailyWord/>
+     <Route path="/" element={<Home/>} />
 
-   <HabitList onHabitCompleted={addPoints}/>
+     <Route path="/habits" element={<Habits/>} />
 
-   <ProgressBar value={40}></ProgressBar>
+     <Route path="/rewards" element={<Rewards/>} />
 
-  </div>
+     <Route path="/profile" element={<Profile/>} />
+
+     <Route path="/chat" element={<Chat/>} />
+
+    </Routes>
+
+    <Navebar />
+
+   </div>
+
+  </BrowserRouter>
 
  )
 

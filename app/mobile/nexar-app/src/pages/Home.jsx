@@ -1,15 +1,17 @@
 import DailyWord from "../components/DailyWord";
 
-export default function Home() {
+export default function Home(){
 
-  return (
-    <div className="container">
-      <h1>NEX</h1>
+ return(
 
-      <DailyWord />
+  <div>
 
-      <p>Build small actions today.</p>
+   <h2>Today's Focus</h2>
 
-    </div>
-  );
+   <DailyWord/>
+
+  </div>
+
+ )
+
 }
