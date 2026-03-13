@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getRewards, saveRewards } from "../services/appStorage";
 
 export default function RewardStore({points,setPoints}){
 
@@ -8,7 +9,13 @@ export default function RewardStore({points,setPoints}){
   {name:"Focus Mode",cost:300}
  ];
 
- const [unlocked,setUnlocked] = useState([]);
+ const [unlocked,setUnlocked] = useState(getRewards());
+
+useEffect(()=>{
+
+ saveRewards(unlocked)
+
+},[unlocked])
 
  function unlockReward(reward){
 
