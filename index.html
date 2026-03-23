@@ -2,59 +2,166 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="description" content="Rootio — Evolução Pessoal com IA" />
 
-    <!-- PWA manifest -->
+    <!--
+      ══════════════════════════════════════
+      VIEWPORT & PWA
+      Bloqueia zoom manual (UX de app nativo).
+      viewport-fit=cover cobre o "notch" do iPhone.
+      ══════════════════════════════════════
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+
+    <!--
+      ══════════════════════════════════════
+      SEO BÁSICO
+      ══════════════════════════════════════
+    -->
+    <title>Rootio — Evolução Pessoal com IA</title>
+    <meta
+      name="description"
+      content="Rootio é um app de evolução pessoal que combina rastreamento de hábitos, finanças, carreira e reflexão com inteligência artificial. Tudo privado, tudo no seu dispositivo."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Rootio" />
+
+    <!--
+      ══════════════════════════════════════
+      OPEN GRAPH — compartilhamento em redes sociais
+      (WhatsApp, LinkedIn, Facebook, etc.)
+      ══════════════════════════════════════
+    -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:locale"      content="pt_BR" />
+    <meta property="og:site_name"   content="Rootio" />
+    <meta property="og:title"       content="Rootio — Evolução Pessoal com IA" />
+    <meta
+      property="og:description"
+      content="Rastreie hábitos, finanças e carreira com inteligência artificial. Privado, offline-first e no seu ritmo."
+    />
+    <meta property="og:image"       content="/icons/og-image.png" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt"   content="Rootio — tela principal do app com hábitos e progresso" />
+
+    <!--
+      ══════════════════════════════════════
+      TWITTER / X CARD
+      ══════════════════════════════════════
+    -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:title"       content="Rootio — Evolução Pessoal com IA" />
+    <meta
+      name="twitter:description"
+      content="Hábitos, finanças e carreira com IA. Privado e offline-first."
+    />
+    <meta name="twitter:image"       content="/icons/og-image.png" />
+    <meta name="twitter:image:alt"   content="Tela principal do Rootio" />
+
+    <!--
+      ══════════════════════════════════════
+      PWA MANIFEST
+      ══════════════════════════════════════
+    -->
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- iOS Safari — crítico para funcionar como app instalado -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!--
+      ══════════════════════════════════════
+      iOS SAFARI — necessário para funcionar
+      como app instalado na tela de início
+      ══════════════════════════════════════
+    -->
+    <meta name="apple-mobile-web-app-capable"       content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Rootio" />
-    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title"         content="Rootio" />
+    <meta name="mobile-web-app-capable"             content="yes" />
+    <link rel="apple-touch-icon" sizes="180x180"    href="/icons/apple-touch-icon.png" />
 
-    <!-- iOS: apple-touch-icon (Safari usa este, não o manifest) -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-
-    <!-- Favicon para aba do browser -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <!--
+      ══════════════════════════════════════
+      ÍCONES & COR DA BARRA DE STATUS
+      ══════════════════════════════════════
+    -->
+    <link rel="icon" type="image/png" sizes="32x32"  href="/icons/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
-
-    <!-- Cor da barra de status iOS -->
     <meta name="theme-color" content="#111111" />
 
-    <title>Rootio</title>
-
-    <!-- Fontes -->
+    <!--
+      ══════════════════════════════════════
+      FONTES — preconnect reduz latência no
+      primeiro request ao Google Fonts
+      ══════════════════════════════════════
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
+    <!--
+      ══════════════════════════════════════
+      DADOS ESTRUTURADOS (JSON-LD)
+      Ajuda mecanismos de busca a entender
+      o que é o app (Schema.org/WebApplication)
+      ══════════════════════════════════════
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Rootio",
+        "description": "App de evolução pessoal com rastreamento de hábitos, finanças, carreira e reflexão com IA.",
+        "applicationCategory": "LifestyleApplication",
+        "operatingSystem": "Web, Android, iOS",
+        "inLanguage": "pt-BR",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "BRL"
+        }
+      }
+    </script>
   </head>
+
   <body>
-    <div id="root"></div>
+    <!--
+      #root — ponto de montagem do React.
+      O atributo aria-busy=true é removido pelo React após montar.
+    -->
+    <div id="root" aria-busy="true"></div>
+
     <script type="module" src="/src/main.jsx"></script>
 
-    <!-- Service Worker PWA — offline support -->
+    <!--
+      ══════════════════════════════════════
+      SERVICE WORKER — suporte offline (PWA)
+      Registra sw.js e loga eventos de
+      atualização disponível.
+      ══════════════════════════════════════
+    -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker
+            .register('/sw.js')
             .then(reg => {
               console.log('[Rootio] SW registrado:', reg.scope)
+
+              // Avisa quando uma nova versão está disponível
               reg.addEventListener('updatefound', () => {
-                const newSW = reg.installing
-                newSW.addEventListener('statechange', () => {
-                  if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('[Rootio] Nova versão disponível')
+                const novoSW = reg.installing
+                novoSW.addEventListener('statechange', () => {
+                  if (novoSW.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('[Rootio] Nova versão disponível — recarregue para atualizar')
                   }
                 })
               })
             })
-            .catch(err => console.warn('[Rootio] SW falhou:', err))
+            .catch(err => console.warn('[Rootio] SW não registrado:', err))
         })
       }
     </script>

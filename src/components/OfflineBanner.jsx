@@ -1,42 +1,71 @@
+// ══════════════════════════════════════
+// COMPONENTE: OfflineBanner
+//
+// Detecta perda/restauração de conexão
+// e exibe um banner temporário.
+//
+// ACESSIBILIDADE:
+//   • Offline → role="alert" + aria-live="assertive"
+//     Interrompe o leitor de tela imediatamente —
+//     perda de conexão é urgente.
+//   • Online  → role="status" + aria-live="polite"
+//     Anuncia quando conveniente — é informativo.
+//   • Ícones com aria-hidden — o texto já comunica
+//     o estado com clareza suficiente.
+//
+// Estado interno:
+//   null       → banner oculto
+//   'offline'  → sem conexão
+//   'online'   → conexão restaurada (auto-oculta em 2.5s)
+// ══════════════════════════════════════
 import { useState, useEffect, useRef } from 'react'
 import { PiWifiSlashBold, PiWifiHighBold } from 'react-icons/pi'
 import styles from './OfflineBanner.module.css'
 
-// null = oculto | 'offline' | 'online'
 export function OfflineBanner() {
-  const [state, setState] = useState(!navigator.onLine ? 'offline' : null)
-  const hideTimer = useRef(null)
+  const [estado, setEstado] = useState(
+    !navigator.onLine ? 'offline' : null
+  )
+  const timerOcultar = useRef(null)
 
-  function showFor(type, ms) {
-    clearTimeout(hideTimer.current)
-    setState(type)
-    hideTimer.current = setTimeout(() => setState(null), ms)
+  // Exibe o banner por `ms` milissegundos, depois oculta
+  function mostrarPor(tipo, ms) {
+    clearTimeout(timerOcultar.current)
+    setEstado(tipo)
+    timerOcultar.current = setTimeout(() => setEstado(null), ms)
   }
 
   useEffect(() => {
-    const goOffline = () => showFor('offline', 4000)
-    const goOnline  = () => showFor('online',  2500)
+    const aoOffline = () => mostrarPor('offline', 4000)
+    const aoOnline  = () => mostrarPor('online',  2500)
 
-    window.addEventListener('offline', goOffline)
-    window.addEventListener('online',  goOnline)
+    window.addEventListener('offline', aoOffline)
+    window.addEventListener('online',  aoOnline)
 
-    // Se já começou offline, mostra o aviso inicial
-    if (!navigator.onLine) showFor('offline', 4000)
+    // Se já começou sem conexão, exibe imediatamente
+    if (!navigator.onLine) mostrarPor('offline', 4000)
 
     return () => {
-      clearTimeout(hideTimer.current)
-      window.removeEventListener('offline', goOffline)
-      window.removeEventListener('online',  goOnline)
+      clearTimeout(timerOcultar.current)
+      window.removeEventListener('offline', aoOffline)
+      window.removeEventListener('online',  aoOnline)
     }
   }, [])
 
-  if (!state) return null
+  if (!estado) return null
+
+  const eOffline = estado === 'offline'
 
   return (
-    <div className={`${styles.banner} ${state === 'online' ? styles.online : ''}`}>
-      {state === 'offline'
-        ? <><PiWifiSlashBold size={13}/><span>Sem conexão · dados salvos localmente</span></>
-        : <><PiWifiHighBold  size={13}/><span>Conexão restabelecida</span></>
+    <div
+      className={`${styles.banner} ${eOffline ? '' : styles.online}`}
+      role={eOffline ? 'alert' : 'status'}
+      aria-live={eOffline ? 'assertive' : 'polite'}
+      aria-atomic="true"
+    >
+      {eOffline
+        ? <><PiWifiSlashBold size={13} aria-hidden="true" /><span>Sem conexão · dados salvos localmente</span></>
+        : <><PiWifiHighBold  size={13} aria-hidden="true" /><span>Conexão restabelecida</span></>
       }
     </div>
   )

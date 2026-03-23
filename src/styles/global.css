@@ -421,8 +421,21 @@ input, select, textarea {
 
 /* ══════════════════════════════════════
    CHECKBOX ANIMADO
+   Convertido de <div> para <button> —
+   garante acessibilidade de teclado e
+   anúncio correto por leitores de tela.
+   O reset de aparência de button é
+   necessário para anular os estilos nativos.
 ══════════════════════════════════════ */
 .hcheck {
+  /* Reset de botão nativo */
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+  font: inherit;
+  outline-offset: 3px; /* foco de teclado visível */
+
+  /* Dimensões e visual */
   width: 24px;
   height: 24px;
   border: 2.5px solid var(--border);

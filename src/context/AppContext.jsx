@@ -1,80 +1,34 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+// ══════════════════════════════════════
+// CONTEXTO GLOBAL — AppContext
+//
+// Estado central da aplicação. Contém:
+//   • habits   — lista de hábitos com migração segura
+//   • history  — histórico diário de conclusões
+//   • theme    — tema de cores ativo
+//   • soundOn  — preferência de som
+//
+// Ações expostas:
+//   toggleHabit, saveHabit, addHabit, deleteHabit, resetDay,
+//   setTheme, toggleTheme, setSoundOn
+//
+// Persistência: localStorage com prefixo "nex_"
+// Reset automático: todos os dias à meia-noite (fuso local)
+// ══════════════════════════════════════
+import {
+  createContext, useContext, useState,
+  useEffect, useCallback, useRef,
+} from 'react'
 import { loadStorage, saveStorage } from '../services/storage'
-import { applyTheme, initTheme } from '../services/themes'
+import { applyTheme, initTheme }    from '../services/themes'
 
 // ══════════════════════════════════════
-// MIGRAÇÃO DE DADOS
-// Garante que hábitos antigos (sem o campo
-// "days") não quebrem o app. Sempre que
-// carregar do storage, normaliza o formato.
+// UTILITÁRIOS DE DATA
+//
+// Usa data LOCAL (não UTC) para evitar o bug
+// de fuso: às 22h em UTC-3, toISOString()
+// retornaria "amanhã". getFullYear/Month/Date
+// são sempre no fuso do dispositivo.
 // ══════════════════════════════════════
-function migrateHabit(h) {
-  return {
-    // ── Campos base ──
-    id:       h.id       ?? Date.now(),
-    name:     h.name     ?? 'Hábito',
-    done:     h.done     ?? false,
-    pts:      h.pts      ?? 20,
-    icon:     h.icon     ?? 'PiStarBold',
-    priority: h.priority ?? 'media',
-    freq:     h.freq     ?? 'diario',
-    days:     Array.isArray(h.days) && h.days.length > 0
-                ? h.days
-                : [0, 1, 2, 3, 4, 5, 6],
-
-    // ── Campos novos — migração segura (undefined → valor padrão) ──
-
-    // Subtarefas: [{ id, text, done, pts }]
-    subtasks: Array.isArray(h.subtasks) ? h.subtasks : [],
-
-    // Notas de texto livre
-    notes:    h.notes    ?? '',
-
-    // Motivo — por que esse hábito importa para o usuário
-    reason:   h.reason   ?? '',
-
-    // Etiquetas — array de strings
-    tags:     Array.isArray(h.tags) ? h.tags : [],
-
-    // Data de criação (ISO)
-    createdAt: h.createdAt ?? null,
-
-    // Tempo médio estimado em minutos (ex: 30 = "~30 min")
-    estMins:  h.estMins  != null ? Number(h.estMins) : null,
-
-    // Data limite (ISO string "YYYY-MM-DD") — independente da frequência
-    // A frequência diz "quando repetir", a deadline diz "até quando"
-    deadline: h.deadline ?? null,
-
-    // Período preferido do dia: null | 'manha' | 'tarde' | 'noite'
-    period: ['manha', 'tarde', 'noite'].includes(h.period) ? h.period : null,
-
-    // Horário preferido (HH:MM) — quando fazer o hábito
-    habitTime: h.habitTime ?? null,
-
-    // Arquivado — oculta da lista principal
-    archived: h.archived ?? false,
-  }
-}
-
-function migrateHabits(raw) {
-  if (!Array.isArray(raw)) return DEFAULT_HABITS
-  return raw.map(migrateHabit)
-}
-
-// ══════════════════════════════════════
-// DADOS PADRÃO
-// ══════════════════════════════════════
-const DEFAULT_HABITS = [
-  { id: 1, name: 'Meditação', done: false, pts: 20, icon: 'PiBrainBold',   priority: 'alta',  freq: 'diario',        days: [0,1,2,3,4,5,6] },
-  { id: 2, name: 'Exercício', done: false, pts: 30, icon: 'PiBarbell',     priority: 'alta',  freq: 'personalizado', days: [1,3,5] },
-  { id: 3, name: 'Leitura',   done: false, pts: 20, icon: 'PiBookOpenText',priority: 'media', freq: 'diario',        days: [0,1,2,3,4,5,6] },
-  { id: 4, name: 'Água',      done: false, pts: 10, icon: 'PiDropBold',    priority: 'baixa', freq: 'diario',        days: [0,1,2,3,4,5,6] },
-  { id: 5, name: 'Código',    done: false, pts: 30, icon: 'PiCodeBold',    priority: 'media', freq: 'personalizado', days: [1,2,3,4,5] },
-]
-
-// Usa data LOCAL (não UTC) — evita bug de fuso: às 22h em UTC-3,
-// toISOString() retornaria amanhã. getFullYear/Month/Date são sempre locais.
 function todayStr() {
   const d = new Date()
   return [
@@ -85,42 +39,128 @@ function todayStr() {
 }
 
 // ══════════════════════════════════════
-// CONTEXTO
+// MIGRAÇÃO DE HÁBITOS
+//
+// Garante retrocompatibilidade: hábitos
+// gravados em versões antigas do app são
+// normalizados com todos os campos novos
+// e valores padrão seguros.
+//
+// Regra: nunca lançar erro — se um campo
+// for inválido ou ausente, usa o padrão.
+// ══════════════════════════════════════
+function migrateHabit(h) {
+  return {
+    // ── Identidade ──
+    id:       h.id       ?? Date.now(),
+    name:     h.name     ?? 'Hábito',
+    icon:     h.icon     ?? 'PiStarBold',
+
+    // ── Progresso diário ──
+    done:     h.done     ?? false,
+    pts:      h.pts      ?? 20,
+
+    // ── Classificação ──
+    priority: h.priority ?? 'media',
+
+    // ── Frequência ──
+    // freq: 'diario' ou 'personalizado'
+    // days: array de 0 (Dom) a 6 (Sáb)
+    freq: h.freq ?? 'diario',
+    days: Array.isArray(h.days) && h.days.length > 0
+      ? h.days
+      : [0, 1, 2, 3, 4, 5, 6],
+
+    // ── Contexto e metadados ──
+    subtasks:  Array.isArray(h.subtasks) ? h.subtasks : [],
+    notes:     h.notes    ?? '',
+    reason:    h.reason   ?? '',   // "por que esse hábito importa"
+    tags:      Array.isArray(h.tags) ? h.tags : [],
+    createdAt: h.createdAt ?? null,
+
+    // ── Planejamento ──
+    // estMins: tempo estimado (null = não definido)
+    estMins:   h.estMins != null ? Number(h.estMins) : null,
+
+    // deadline: "YYYY-MM-DD" — até quando praticar (independente da freq.)
+    deadline:  h.deadline ?? null,
+
+    // period: null | 'manha' | 'tarde' | 'noite'
+    period: ['manha', 'tarde', 'noite'].includes(h.period) ? h.period : null,
+
+    // habitTime: "HH:MM" — horário sugerido
+    habitTime: h.habitTime ?? null,
+
+    // ── Arquivamento ──
+    archived:  h.archived ?? false,
+  }
+}
+
+function migrateHabits(raw) {
+  if (!Array.isArray(raw)) return DEFAULT_HABITS
+  return raw.map(migrateHabit)
+}
+
+// ══════════════════════════════════════
+// HÁBITOS PADRÃO
+// Usados na primeira vez que o app abre,
+// antes de qualquer customização.
+// ══════════════════════════════════════
+const DEFAULT_HABITS = [
+  { id: 1, name: 'Meditação', done: false, pts: 20, icon: 'PiBrainBold',    priority: 'alta',  freq: 'diario',        days: [0,1,2,3,4,5,6] },
+  { id: 2, name: 'Exercício', done: false, pts: 30, icon: 'PiBarbell',      priority: 'alta',  freq: 'personalizado', days: [1,3,5]          },
+  { id: 3, name: 'Leitura',   done: false, pts: 20, icon: 'PiBookOpenText', priority: 'media', freq: 'diario',        days: [0,1,2,3,4,5,6] },
+  { id: 4, name: 'Água',      done: false, pts: 10, icon: 'PiDropBold',     priority: 'baixa', freq: 'diario',        days: [0,1,2,3,4,5,6] },
+  { id: 5, name: 'Código',    done: false, pts: 30, icon: 'PiCodeBold',     priority: 'media', freq: 'personalizado', days: [1,2,3,4,5]     },
+]
+
+// ══════════════════════════════════════
+// CRIAÇÃO DO CONTEXTO
 // ══════════════════════════════════════
 const AppContext = createContext(null)
 
+// ══════════════════════════════════════
+// PROVIDER
+// ══════════════════════════════════════
 export function AppProvider({ children }) {
-  // Ao carregar, verifica se o dia mudou e reseta done dos hábitos
+
+  // ── Estado inicial: hábitos com auto-reset de dia ──
   const [habits, setHabits] = useState(() => {
-    const raw = migrateHabits(loadStorage('nex_habits', DEFAULT_HABITS))
+    const raw       = migrateHabits(loadStorage('nex_habits', DEFAULT_HABITS))
     const lastReset = loadStorage('nex_last_reset', '')
     const today     = todayStr()
+
+    // Se o app abriu em um novo dia, reseta done de todos os hábitos
     if (lastReset !== today) {
-      // Novo dia — reseta done de todos os hábitos
       const reset = raw.map(h => ({ ...h, done: false }))
       saveStorage('nex_habits', reset)
       saveStorage('nex_last_reset', today)
       return reset
     }
+
     return raw
   })
-  const [history, setHistory] = useState(() => loadStorage('nex_history', {}))
-  const [theme,   setThemeState] = useState(() => initTheme())
-  const [soundOn, setSoundOnState] = useState(() => loadStorage('nex_sound', true))
 
-  // Aplica o tema no <html> sempre que mudar (incluindo na montagem inicial)
-  useEffect(() => {
-    applyTheme(theme)
-  }, [theme])  // eslint-disable-line react-hooks/exhaustive-deps
+  const [history,   setHistory]    = useState(() => loadStorage('nex_history', {}))
+  const [theme,     setThemeState] = useState(() => initTheme())
+  const [soundOn,   setSoundOnSt]  = useState(() => loadStorage('nex_sound', true))
 
-  useEffect(() => { saveStorage('nex_sound',  soundOn) }, [soundOn])
+  // ── Efeitos de persistência e sincronização ──
 
-  // Persiste hábitos e atualiza histórico do dia
+  // Aplica o tema no <html> sempre que mudar
+  useEffect(() => { applyTheme(theme) }, [theme]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persiste preferência de som
+  useEffect(() => { saveStorage('nex_sound', soundOn) }, [soundOn])
+
+  // Persiste hábitos e registra o dia atual no histórico
   useEffect(() => {
     saveStorage('nex_habits', habits)
+
     const today  = todayStr()
     const habMap = {}
     habits.forEach(h => { if (h.done) habMap[h.id] = true })
+
     const updated = {
       ...history,
       [today]: {
@@ -134,34 +174,43 @@ export function AppProvider({ children }) {
   }, [habits]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Reset automático à meia-noite (fuso local) ──
-  // Calcula exatamente quantos ms faltam para 00:00:01 local e agenda o reset.
-  // Após cada reset, reagenda para a próxima meia-noite (loop infinito correto).
+  //
+  // Calcula exatamente quantos ms faltam para 00:00:01 local
+  // e agenda o reset. Após cada reset, reagenda para a próxima
+  // meia-noite — loop correto sem drift de intervalo.
   const midnightTimer = useRef(null)
+
   useEffect(() => {
-    function scheduleNext() {
-      const now  = new Date()
-      const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1)
-      const ms   = next - now
+    function agendarProximoReset() {
+      const agora     = new Date()
+      const proxima   = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + 1, 0, 0, 1)
+      const msRestantes = proxima - agora
+
       midnightTimer.current = setTimeout(() => {
-        const today = todayStr()
         setHabits(prev => prev.map(h => ({ ...h, done: false })))
-        saveStorage('nex_last_reset', today)
-        scheduleNext()
-      }, ms)
+        saveStorage('nex_last_reset', todayStr())
+        agendarProximoReset() // reagenda para a próxima noite
+      }, msRestantes)
     }
-    scheduleNext()
+
+    agendarProximoReset()
     return () => clearTimeout(midnightTimer.current)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Ações (useCallback para identidade estável) ──
+  // ══════════════════════════════════════
+  // AÇÕES — useCallback para identidade
+  // estável (evita re-renders desnecessários
+  // em componentes filhos que as recebem)
+  // ══════════════════════════════════════
 
+  // Alterna o estado done de um hábito pelo id
   const toggleHabit = useCallback((id) => {
     setHabits(prev => prev.map(h => h.id === id ? { ...h, done: !h.done } : h))
   }, [])
 
+  // Cria ou atualiza um hábito (upsert por id)
   const saveHabit = useCallback((updated) => {
-    // Garante migração mesmo ao salvar da tela de edição
-    const safe = migrateHabit(updated)
+    const safe = migrateHabit(updated) // garante campos novos ao salvar da tela de edição
     setHabits(prev =>
       prev.some(h => h.id === safe.id)
         ? prev.map(h => h.id === safe.id ? safe : h)
@@ -169,32 +218,39 @@ export function AppProvider({ children }) {
     )
   }, [])
 
+  // Adiciona um novo hábito (gera id por timestamp)
   const addHabit = useCallback((habit) => {
     const safe = migrateHabit({ ...habit, id: Date.now() })
     setHabits(prev => [...prev, safe])
   }, [])
 
+  // Remove permanentemente um hábito pelo id
   const deleteHabit = useCallback((id) => {
     setHabits(prev => prev.filter(h => h.id !== id))
   }, [])
 
+  // Reseta manualmente o dia (sem esperar meia-noite)
   const resetDay = useCallback(() => {
     setHabits(prev => prev.map(h => ({ ...h, done: false })))
     saveStorage('nex_last_reset', todayStr())
   }, [])
 
+  // Define o tema pelo id (ex: 'dark', 'glass', 'sakura')
   const setTheme = useCallback((id) => {
     setThemeState(id)
   }, [])
 
+  // Alterna entre claro e escuro (atalho rápido)
   const toggleTheme = useCallback(() => {
     setThemeState(t => t === 'dark' ? 'light' : 'dark')
   }, [])
 
+  // Atualiza preferência de som (aceita valor ou função atualizadora)
   const setSoundOn = useCallback((val) => {
-    setSoundOnState(typeof val === 'function' ? val : () => val)
+    setSoundOnSt(typeof val === 'function' ? val : () => val)
   }, [])
 
+  // ── Valor exposto pelo contexto ──
   const value = {
     habits, history, theme, soundOn,
     toggleHabit, saveHabit, addHabit, deleteHabit, resetDay,
@@ -204,8 +260,13 @@ export function AppProvider({ children }) {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
 
+// ══════════════════════════════════════
+// HOOK DE ACESSO
+// Lança erro descritivo se usado fora
+// do AppProvider — facilita debugging.
+// ══════════════════════════════════════
 export function useApp() {
   const ctx = useContext(AppContext)
-  if (!ctx) throw new Error('useApp deve ser usado dentro de AppProvider')
+  if (!ctx) throw new Error('useApp deve ser usado dentro de <AppProvider>')
   return ctx
 }

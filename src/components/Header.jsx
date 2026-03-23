@@ -1,7 +1,18 @@
 // ══════════════════════════════════════
-// HEADER — barra superior fixa
-// Exibe o logotipo e a sequência atual
-// (streak) quando maior que zero.
+// COMPONENTE: Header
+//
+// Barra superior fixa — visível apenas
+// no mobile (< 768px). Em tablet/desktop
+// o SideNav assume essa função.
+//
+// ACESSIBILIDADE:
+//   • <header> tem role="banner" implícito —
+//     leitores de tela anunciam como região
+//   • Logo com aria-label descreve o app
+//   • Streak com aria-label numérico explícito
+//     ("Sequência de 12 dias") — melhor que
+//     apenas "12d" que é ambíguo em voz
+//   • PiFlameFill com aria-hidden — decorativo
 // ══════════════════════════════════════
 import { PiFlameFill } from 'react-icons/pi'
 import { useApp }      from '../context/AppContext'
@@ -14,12 +25,19 @@ export function Header() {
 
   return (
     <header className={styles.header}>
-      <h1 className={styles.logo}>../</h1>
+      {/* Logo — aria-label nomeia o app para leitores de tela */}
+      <span className={styles.logo} aria-label="Rootio">../</span>
 
+      {/* Streak — só renderiza se o usuário tiver sequência ativa */}
       {streak > 0 && (
-        <div className={styles.streakPill}>
-          <PiFlameFill size={11} color="#b08000" />
-          {streak}d
+        <div
+          className={styles.streakPill}
+          aria-label={`Sequência de ${streak} ${streak === 1 ? 'dia' : 'dias'}`}
+          title={`${streak} dias consecutivos`}
+        >
+          {/* Ícone puramente decorativo */}
+          <PiFlameFill size={11} color="var(--gold-dk)" aria-hidden="true" />
+          <span aria-hidden="true">{streak}d</span>
         </div>
       )}
     </header>

@@ -1,5 +1,30 @@
+// ══════════════════════════════════════
+// COMPONENTE: SideNav
+//
+// Barra lateral de navegação — visível
+// apenas em tablet/desktop (≥ 768px via CSS).
+// Em mobile o BottomNav assume essa função.
+//
+// Layout:
+//   [Brand: logo + streak]
+//   ─────────────────────
+//   Início / Hábitos / Finanças
+//   ── (divider) ──
+//   Experiência / Carreira / Projetos / Mentor  ← desbloqueáveis
+//   [espaço flexível]
+//   Perfil  ← sempre ao fundo
+//
+// ACESSIBILIDADE:
+//   • <aside aria-label="Navegação principal"> —
+//     landmark reconhecido por leitores de tela
+//   • <nav> interno para semântica correta
+//   • aria-current="page" no link ativo
+//   • Ícones com aria-hidden
+//   • streak: aria-label com texto completo
+//   • divider: aria-hidden — puramente visual
+// ══════════════════════════════════════
 import { useState, useEffect, useRef } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import {
   PiFlameFill,
   PiHouseBold,          PiHouseFill,
@@ -15,14 +40,20 @@ import { useApp }   from '../context/AppContext'
 import { useStats } from '../hooks/useStats'
 import styles from './SideNav.module.css'
 
-// ── Mesma estrutura de nav do BottomNav ──
+// ══════════════════════════════════════
+// DEFINIÇÃO DOS ITENS DE NAVEGAÇÃO
+// ══════════════════════════════════════
+
 const BASE_NAV = [
   { to: '/',        label: 'Início',   Icon: PiHouseBold,          IconA: PiHouseFill          },
   { to: '/habits',  label: 'Hábitos',  Icon: PiCheckSquareBold,    IconA: PiCheckSquareFill    },
   { to: '/finance', label: 'Finanças', Icon: PiCurrencyDollarBold, IconA: PiCurrencyDollarFill },
 ]
 
-const PROFILE_ITEM = { to: '/profile', label: 'Perfil', Icon: PiUserCircleBold, IconA: PiUserCircleFill }
+const PROFILE_ITEM = {
+  to: '/profile', label: 'Perfil',
+  Icon: PiUserCircleBold, IconA: PiUserCircleFill,
+}
 
 const UNLOCKABLE = [
   { id: 'util_progress', to: '/progress', label: 'Experiência', Icon: PiChartBarBold,     IconA: PiChartBarFill     },
@@ -31,23 +62,35 @@ const UNLOCKABLE = [
   { id: 'util_mentor',   to: '/mentor',   label: 'Mentor',      Icon: PiRobotBold,        IconA: PiRobotBold        },
 ]
 
+// ══════════════════════════════════════
+// HELPER — lê itens comprados do storage
+// ══════════════════════════════════════
 function getOwned() {
-  try { return new Set(JSON.parse(localStorage.getItem('nex_shop_owned') || '[]')) }
-  catch { return new Set() }
+  try {
+    return new Set(JSON.parse(localStorage.getItem('nex_shop_owned') || '[]'))
+  } catch {
+    return new Set()
+  }
 }
 
+// ══════════════════════════════════════
+// HOOK: useUnlockableItem
+// (idêntico ao do BottomNav — candidato
+// a extração futura para hooks/useNav.js)
+// ══════════════════════════════════════
 function useUnlockableItem(id) {
-  const [visible,  setVisible]  = useState(() => getOwned().has(id))
-  const [animCls,  setAnimCls]  = useState(() => getOwned().has(id) ? 'visible' : 'hidden')
+  const [visible, setVisible] = useState(() => getOwned().has(id))
+  const [animCls, setAnimCls] = useState(() => getOwned().has(id) ? 'visible' : 'hidden')
   const prevRef = useRef(visible)
 
   useEffect(() => {
-    function handle() {
-      const owned = getOwned()
-      const next  = owned.has(id)
-      if (next === prevRef.current) return
-      prevRef.current = next
-      if (next) {
+    function verificar() {
+      const comprados    = getOwned()
+      const desbloqueado = comprados.has(id)
+      if (desbloqueado === prevRef.current) return
+      prevRef.current = desbloqueado
+
+      if (desbloqueado) {
         setVisible(true)
         setAnimCls('entering')
         setTimeout(() => setAnimCls('visible'), 550)
@@ -56,37 +99,45 @@ function useUnlockableItem(id) {
         setTimeout(() => { setAnimCls('hidden'); setVisible(false) }, 420)
       }
     }
-    window.addEventListener('nex_shop_changed', handle)
-    window.addEventListener('storage', e => { if (e.key === 'nex_shop_owned') handle() })
-    return () => window.removeEventListener('nex_shop_changed', handle)
+
+    window.addEventListener('nex_shop_changed', verificar)
+    window.addEventListener('storage', e => {
+      if (e.key === 'nex_shop_owned') verificar()
+    })
+
+    return () => window.removeEventListener('nex_shop_changed', verificar)
   }, [id])
 
   return { visible, animCls }
 }
 
-// ── Link individual da sidebar ──
+// ══════════════════════════════════════
+// SUBCOMPONENTE: SideLink
+// Link de navegação com ícone + rótulo
+// ══════════════════════════════════════
 function SideLink({ to, label, Icon, IconA, extraClass }) {
+  const { pathname } = useLocation()
+  const isActive = to === '/' ? pathname === '/' : pathname.startsWith(to)
+
   return (
     <NavLink
       to={to}
-      data-label={label}
-      className={({ isActive }) =>
-        [styles.link, isActive && styles.active, extraClass].filter(Boolean).join(' ')
-      }
+      className={[styles.link, isActive && styles.active, extraClass].filter(Boolean).join(' ')}
+      aria-current={isActive ? 'page' : undefined}
     >
-      {({ isActive }) => (
-        <>
-          <span className={styles.icon}>
-            {isActive ? <IconA size={20} /> : <Icon size={20} />}
-          </span>
-          <span className={styles.label}>{label}</span>
-        </>
-      )}
+      {/* Ícone: decorativo — rótulo já comunica o destino */}
+      <span className={styles.icon} aria-hidden="true">
+        {isActive ? <IconA size={20} /> : <Icon size={20} />}
+      </span>
+      <span className={styles.label}>{label}</span>
     </NavLink>
   )
 }
 
-// ── Item desbloqueável com animação de entrada/saída ──
+// ══════════════════════════════════════
+// SUBCOMPONENTE: UnlockableItem
+// Item desbloqueável com animação de entrada/saída
+// ══════════════════════════════════════
 function UnlockableItem({ item }) {
   const { visible, animCls } = useUnlockableItem(item.id)
   if (!visible && animCls === 'hidden') return null
@@ -108,6 +159,9 @@ function UnlockableItem({ item }) {
   )
 }
 
+// ══════════════════════════════════════
+// COMPONENTE PRINCIPAL
+// ══════════════════════════════════════
 export function SideNav() {
   const { history } = useApp()
   const { streak }  = useStats(history)
@@ -115,31 +169,41 @@ export function SideNav() {
   return (
     <aside className={styles.side} aria-label="Navegação principal">
 
-      {/* ── Logo + streak ── */}
+      {/* ── Marca e streak ── */}
       <div className={styles.brand}>
-        <span className={styles.logo}>../</span>
+        {/* aria-label nomeia o app para leitores de tela */}
+        <span className={styles.logo} aria-label="Rootio">../</span>
+
         {streak > 0 && (
-          <span className={styles.streak}>
-            <PiFlameFill size={11} color="#b08000" />
-            {streak}d
+          <span
+            className={styles.streak}
+            aria-label={`Sequência de ${streak} ${streak === 1 ? 'dia' : 'dias'}`}
+          >
+            <PiFlameFill size={11} color="var(--gold-dk)" aria-hidden="true" />
+            <span aria-hidden="true">{streak}d</span>
           </span>
         )}
       </div>
 
-      {/* ── Itens de navegação ── */}
-      <nav className={styles.nav}>
+      {/* ── Links de navegação ── */}
+      <nav>
+        {/* Itens base sempre visíveis */}
         {BASE_NAV.map(({ to, label, Icon, IconA }) => (
           <SideLink key={to} to={to} label={label} Icon={Icon} IconA={IconA} />
         ))}
 
-        {/* Seção desbloqueável */}
-        <div className={styles.divider} />
+        {/* Separador visual — aria-hidden: não tem significado semântico */}
+        <div className={styles.divider} aria-hidden="true" />
+
+        {/* Itens desbloqueáveis */}
         {UNLOCKABLE.map(item => (
           <UnlockableItem key={item.id} item={item} />
         ))}
 
-        {/* Perfil sempre ao fundo */}
-        <div className={styles.spacer} />
+        {/* Espaço flexível empurra Perfil para o rodapé */}
+        <div className={styles.spacer} aria-hidden="true" />
+
+        {/* Perfil — fixado ao fundo */}
         <SideLink
           to={PROFILE_ITEM.to}
           label={PROFILE_ITEM.label}

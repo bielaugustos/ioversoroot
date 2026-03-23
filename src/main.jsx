@@ -1,20 +1,29 @@
+// ══════════════════════════════════════
+// ENTRADA DA APLICAÇÃO
+//
+// Ordem de inicialização:
+//   1. Aplica o tema salvo ANTES do React montar
+//      → elimina o flash de tema incorreto (FOUC)
+//   2. Em desenvolvimento, carrega dados de semente
+//      e silencia avisos conhecidos do React Router v6
+//   3. Monta o React com StrictMode
+// ══════════════════════════════════════
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import { applyTheme } from './services/themes'
 
-// Aplica o tema antes do React montar (evita flash)
+// ── 1. Tema antecipado (antes do primeiro paint) ──
 const savedTheme = localStorage.getItem('nex_theme') || 'light'
 applyTheme(savedTheme)
 
-// Em desenvolvimento, silencia os avisos do React Router v6 sobre flags v7
-// que já estão configuradas no BrowserRouter. Esses avisos são inofensivos
-// e serão eliminados automaticamente ao migrar para React Router v7.
+// ── 2. Ambiente de desenvolvimento ──
 if (import.meta.env.DEV) {
-  import('./devSeed.js') // expõe window.seedDevMode() no console
-}
+  // Expõe window.seedDevMode() no console para popular dados de teste
+  import('./devSeed.js')
 
-if (import.meta.env.DEV) {
+  // Silencia avisos do React Router v6 sobre flags futuras (v7).
+  // São inofensivos e já estão configurados no BrowserRouter.
   const originalWarn = console.warn
   console.warn = (...args) => {
     const msg = typeof args[0] === 'string' ? args[0] : ''
@@ -23,7 +32,12 @@ if (import.meta.env.DEV) {
   }
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+// ── 3. Montagem do React ──
+// Remove o aria-busy=true do #root que o HTML define enquanto JS carrega
+const rootEl = document.getElementById('root')
+rootEl.removeAttribute('aria-busy')
+
+ReactDOM.createRoot(rootEl).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
