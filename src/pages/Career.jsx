@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePlan } from '../hooks/usePlan'
 import { PlanLimitModal } from '../components/PlanLimitModal'
@@ -13,6 +13,8 @@ import {
 } from 'react-icons/pi'
 import { toast } from '../components/Toast'
 import { playSaveDirect } from '../hooks/useSound'
+import { useAuth } from '../context/AuthContext'
+import { upsertRows, fetchRows } from '../services/supabase'
 import styles from './Career.module.css'
 
 // ══════════════════════════════════════
@@ -67,11 +69,50 @@ function useCareer() {
   const [goals,     setGoals]     = useState(() => load(KEYS.goals,    []))
   const [projects,  setProjects]  = useState(() => load(KEYS.projects, []))
 
-  const upd = (setter, key) => (list) => { setter(list); save(key, list) }
+  const { isLoggedIn, user } = useAuth()
+  const userId = user?.id ?? null
 
-  const updReadings  = upd(setReadings,  KEYS.readings)
-  const updGoals     = upd(setGoals,     KEYS.goals)
-  const updProjects  = upd(setProjects,  KEYS.projects)
+  useEffect(() => {
+    if (!isLoggedIn || !userId) return
+
+    async function loadFromDB() {
+      const { data: readingsData } = await fetchRows('career_readings', userId)
+      if (readingsData?.length > 0) {
+        setReadings(readingsData)
+        save(KEYS.readings, readingsData)
+      }
+
+      const { data: goalsData } = await fetchRows('career_goals', userId)
+      if (goalsData?.length > 0) {
+        setGoals(goalsData)
+        save(KEYS.goals, goalsData)
+      }
+
+      const { data: projectsData } = await fetchRows('career_projects', userId)
+      if (projectsData?.length > 0) {
+        setProjects(projectsData)
+        save(KEYS.projects, projectsData)
+      }
+    }
+
+    loadFromDB()
+  }, [isLoggedIn, userId])
+
+  const upd = (setter, key, table) => (list) => {
+    setter(list)
+    save(key, list)
+    if (isLoggedIn && userId) {
+      const rows = list.map(r => ({ ...r, user_id: userId }))
+      if (rows.length > 0) {
+        upsertRows(table, rows)
+          .catch(e => console.warn(`[Sync] ${table}:`, e))
+      }
+    }
+  }
+
+  const updReadings  = upd(setReadings,  KEYS.readings,  'career_readings')
+  const updGoals     = upd(setGoals,     KEYS.goals,     'career_goals')
+  const updProjects  = upd(setProjects,  KEYS.projects,  'career_projects')
 
   return { readings, goals, projects, updReadings, updGoals, updProjects }
 }

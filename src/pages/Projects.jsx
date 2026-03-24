@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePlan } from '../hooks/usePlan'
 import { PlanLimitModal } from '../components/PlanLimitModal'
@@ -11,6 +11,8 @@ import {
   PiLockSimpleBold, PiCrownBold, PiQuestionBold,
 } from 'react-icons/pi'
 import { toast } from '../components/Toast'
+import { useAuth } from '../context/AuthContext'
+import { upsertRows, fetchRows, deleteRow } from '../services/supabase'
 import styles from './Projects.module.css'
 
 // ══════════════════════════════════════
@@ -442,6 +444,9 @@ const PROJ_PRO_ITEMS  = ['Projetos ilimitados', 'Prazo, prioridade, categorias',
 
 export default function Projects() {
   const [projects,     setProjects]     = useState(() => load('nex_projects', []))
+  const { isLoggedIn, user } = useAuth()
+  const userId = user?.id ?? null
+
   const [showForm,     setShowForm]     = useState(false)
   const [filter,       setFilter]       = useState('todos')
   const [sortBy,       setSortBy]       = useState('prioridade')
@@ -454,7 +459,31 @@ export default function Projects() {
   const activeCount = projects.filter(x => x.status === 'andamento' || x.status === 'planejando').length
   const atLimit     = !isPro && activeCount >= FREE_PROJECTS_LIMIT
 
-  function upd(list) { setProjects(list); save('nex_projects', list) }
+  useEffect(() => {
+    if (!isLoggedIn || !userId) return
+
+    async function loadFromDB() {
+      const { data } = await fetchRows('life_projects', userId)
+      if (data?.length > 0) {
+        setProjects(data)
+        save('nex_projects', data)
+      }
+    }
+
+    loadFromDB()
+  }, [isLoggedIn, userId])
+
+  function upd(list) {
+    setProjects(list)
+    save('nex_projects', list)
+    if (isLoggedIn && userId) {
+      const rows = list.map(p => ({ ...p, user_id: userId }))
+      if (rows.length > 0) {
+        upsertRows('life_projects', rows)
+          .catch(e => console.warn('[Sync] life_projects:', e))
+      }
+    }
+  }
 
   function add(p) {
     if (atLimit) { setShowModal(true); return }
@@ -469,7 +498,14 @@ export default function Projects() {
   function handleUpgrade() { setShowModal(false); navigate('/profile') }
   function handleStay()    { localStorage.setItem('nex_proj_limit_decided', 'true'); setLimitDecided(true); setShowModal(false) }
   function update(p) { upd(projects.map(x => x.id === p.id ? p : x)) }
-  function del(id) { upd(projects.filter(p => p.id !== id)); toast('Projeto removido.') }
+  function del(id) {
+    upd(projects.filter(p => p.id !== id))
+    if (isLoggedIn && userId) {
+      deleteRow('life_projects', id, userId)
+        .catch(e => console.warn('[Sync] deleteProject:', e))
+    }
+    toast('Projeto removido.')
+  }
 
   const PRI_ORDER = { alta: 0, media: 1, baixa: 2 }
 

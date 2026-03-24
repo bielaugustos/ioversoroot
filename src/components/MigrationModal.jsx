@@ -57,7 +57,7 @@ export function MigrationModal({ userId, onDone, mode = 'migrate' }) {
     <div className={styles.overlay}>
       <div className={styles.modal}>
         <div className={styles.icon}>
-          <img src="/icons/icon.svg" width="48" height="48" alt="Rootio" style={{ borderRadius: '50%' }}/>
+          <img src="/icons/icon.png" width="48" height="48" alt="Rootio" style={{ borderRadius: '50%' }}/>
         </div>
 
         <h2 className={styles.title}>
