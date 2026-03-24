@@ -5,17 +5,91 @@
 ## Fluxo de Entrada
 
 ```
-Primeiro acesso
+Abertura do app (qualquer acesso)
       │
       ▼
 ┌─────────────────┐
-│   SplashScreen  │  animação de entrada (sessionStorage)
-│   "Rootio"      │  exibido apenas uma vez por sessão
+│   SplashScreen  │  animação de entrada (~1.35s)
+│   pontos · logo │  exibido a cada carregamento/reload
 └────────┬────────┘
          │ onDone()
          ▼
-    App principal
+   AuthContext carrega sessão Supabase
+         │
+   isLoggedIn?
+    /         \
+  Sim          Não
+   │            │
+   │      ior_auth_skipped?
+   │         /        \
+   │        Sim        Não
+   │         │          │
+   ▼         ▼          ▼
+ App      App        Login
+          (guest)
 ```
+
+---
+
+## Fluxo de Autenticação
+
+```
+Tela de Login
+      │
+      ├── [Entrar com Google]  ──► OAuth Supabase → App (+ SplashScreen transição)
+      ├── [Entrar com e-mail]  ──► Magic Link / senha → App
+      └── [Continuar sem conta] ──► seta ior_auth_skipped=true → App (guest)
+
+Após login bem-sucedido:
+      │
+      ▼
+  INITIAL_SESSION (Supabase)
+      │
+  hasLocalData()?
+    /         \
+  Não          Sim
+   │            │
+   ▼            ▼
+Carrega       Mantém dados locais
+dados da      (migração pendente)
+nuvem →
+applyRemoteData()
++ reload
+```
+
+---
+
+## Modais de Transição (sobrepostos ao app)
+
+```
+┌─────────────────────────────────────────────────┐
+│  MigrationModal — modo "migrate"                │
+│  Exibido UMA VEZ ao usuário logado com dados    │
+│  locais não migrados (profile.migration_done=0) │
+│                                                 │
+│  [Sim, subir dados]  →  sobe tudo ao Supabase   │
+│                         + seta migration_done   │
+│                         + reload com SplashScreen│
+│  [Agora não]         →  seta migration_done     │
+│                         + fecha modal           │
+└─────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────┐
+│  MigrationModal — modo "paywall"                │
+│  Exibido ao visitante (guest) que atingiu ≥60%  │
+│  de qualquer limite free (reexibe após 7 dias)  │
+│                                                 │
+│  [Criar conta gratuita]  →  remove skipped flag │
+│                             → reload → Login    │
+│  [Continuar sem conta]   →  fecha por 7 dias    │
+└─────────────────────────────────────────────────┘
+```
+
+Limites que disparam o paywall:
+- ≥ 6 hábitos
+- ≥ 6 leituras de carreira
+- ≥ 2 projetos ativos (planejando/andamento)
+- ≥ 30 transações financeiras no mês
 
 ---
 
@@ -87,9 +161,9 @@ MOBILE (< 768px)                    DESKTOP (≥ 768px)
 ### /habits — Hábitos
 ```
 ┌──────────────────────────────────────┐
-│  Barra de resumo: X/Y hoje · pts    │
+│  Barra de resumo: X/Y hoje · pts     │
 ├──────────────────────────────────────┤
-│  [+ Novo Hábito]  [Sugerir com IA]  │
+│  [+ Novo Hábito]  [Sugerir com IA]   │
 ├──────────────────────────────────────┤
 │  Grid de cards por hábito:           │
 │  ┌────────────────────────────────┐  │
@@ -260,8 +334,11 @@ MOBILE (< 768px)                    DESKTOP (≥ 768px)
 │  Chave de API (campo texto)          │
 ├──────────────────────────────────────┤
 │  PLANO                               │
-│  Free vs Pro                         │
-│  O que cada plano desbloqueia        │
+│  Free (gratuito) vs Pro              │
+│  Dois cards lado a lado:             │
+│  Free: lista de recursos incluídos   │
+│  Pro: "Tudo do Gratuito, mais:" +    │
+│       extras destacados em dourado   │
 ├──────────────────────────────────────┤
 │  LOJA                                │
 │  Utilitários (4 páginas)             │
@@ -272,7 +349,51 @@ MOBILE (< 768px)                    DESKTOP (≥ 768px)
 │  [Exportar JSON]  [Importar JSON]    │
 │  [Resetar tudo]                      │
 │  Informações de uso do armazenamento │
+├──────────────────────────────────────┤
+│  Footer: logo · tagline · redes      │
+│  Termos · Privacidade · Cookies      │
+│  (abrem em modal interno)            │
+├──────────────────────────────────────┤
+│  Se logado:                          │
+│  [Migrar dados locais]  (se houver)  │
+│  [Sair da conta]  →  modal confirm   │
+│                       + reload       │
+│                                      │
+│  Se visitante (guest):               │
+│  [Entrar na conta]  →  remove skip   │
+│                        + reload      │
+│  [Sair da conta]    →  modal confirm │
+│                        + clearLocal  │
+│                        + reload      │
 └──────────────────────────────────────┘
+```
+
+---
+
+## Fluxo de Logout
+
+```
+[Sair da conta]
+      │
+      ▼
+Modal de confirmação
+  "Tem certeza que deseja sair?"
+      │
+  Confirmar?
+   /       \
+  Sim        Não
+   │          │
+   ▼          ▼
+signOut()   fecha modal
+   │
+   ▼
+window.location.reload()
+   │
+   ▼
+SplashScreen (animação)
+   │
+   ▼
+App reinicia → tela de Login
 ```
 
 ---
@@ -314,17 +435,21 @@ Novo item aparece
 ## Fluxo de Reset Diário
 
 ```
-App carrega  ──────────────────────────────────┐
-    │                                          │
-    ▼                                          │
-data atual == nex_last_reset?         verificação a cada
-    │                                  30s + foco na janela
+App carrega
+    │
+    ▼
+data atual == nex_last_reset?
+    │
    Não
     │
     ▼
 resetDay() — marca todos os hábitos
              com done: false
              salva nova data
+
+Também agendado via setTimeout
+para 00:00:01 do dia seguinte
+(sem depender de reload)
 ```
 
 ---
@@ -354,24 +479,74 @@ PIN configurado?
 
 ---
 
+## Sincronização de Dados
+
+```
+Arquitetura: offline-first
+  localStorage → fonte primária (sempre disponível)
+  Supabase     → sincronização em background (quando logado)
+
+Fluxo de escrita (hábitos):
+  toggleHabit / saveHabit / addHabit / deleteHabit
+      │
+      ▼
+  setHabits (atualiza React state)
+      │
+      ├── saveStorage('nex_habits', ...)  ← imediato
+      │
+      └── upsertRows('habits', ...)       ← background (.catch warn)
+          (só se isLoggedIn && userId)
+
+Fluxo de leitura no login:
+  INITIAL_SESSION + !hasLocalData()
+      │
+      ▼
+  loadFromSupabase(userId)
+      │
+      ▼
+  applyRemoteData(data)  → salva em localStorage
+      │
+      ▼
+  window.location.reload()
+
+Tabelas sincronizadas:
+  habits · habit_history · transactions
+  financial_goals · emergency_fund
+  career_readings · career_goals · career_projects
+  life_projects · journal
+```
+
+---
+
 ## Comunicação entre Componentes
 
 ```
+AuthContext
+    ├── session, user, profile, isLoggedIn, plan, isPro
+    └── lido por: AppShell, AppContext, Profile, Header
+
 AppContext (estado global)
-    ├── habits, history, theme, soundOn
-    ├── lido por: Home, Habits, Progress,
-    │            Stats, Mentor, SideNav
-    └── SoundSync → sincroniza _soundEnabled
+    ├── habits, history, theme, soundOn, plan
+    ├── toggleHabit, saveHabit, addHabit, deleteHabit, resetDay
+    ├── setTheme, toggleTheme, setSoundOn, setPlan
+    ├── lido por: Home, Habits, Progress, Mentor, SideNav
+    └── sincroniza com Supabase em background quando logado
 
 localStorage (persistência)
-    ├── nex_habits / nex_history → AppContext
-    ├── nex_shop_owned → BottomNav, SideNav, Profile
-    └── nex_fin_* / nex_career_* → Finance, Career
+    ├── nex_habits / nex_history         → AppContext
+    ├── nex_shop_owned                   → BottomNav, SideNav, Profile
+    ├── nex_fin_* / nex_career_*         → Finance, Career
+    ├── ior_auth_skipped                 → AppShell (modo guest)
+    ├── ior_migration_offered_<userId>   → AppShell (flag local migração)
+    └── nex_paywall_at                   → AppShell (cooldown paywall 7d)
 
 Eventos customizados
     └── "nex_shop_changed"
         emitido por: Profile (loja)
         ouvido por:  BottomNav, SideNav
+    └── "nex_plan_changed"
+        emitido por: AppContext
+        ouvido por:  componentes que reagem ao plano
 
 Toast (singleton)
     └── chamado diretamente via toast("msg")

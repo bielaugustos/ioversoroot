@@ -14,7 +14,7 @@ import {
   PiCalendarBold, PiLockSimpleBold,
   PiKeyBold, PiEyeBold, PiEyeSlashBold,
   PiCrownBold, PiCreditCardBold, PiXBold, PiSparkleBold,
-  PiEnvelopeBold, PiMapPinBold, PiPhoneBold,
+  // PiEnvelopeBold, PiMapPinBold, PiPhoneBold, // contato desativado
   PiInstagramLogoFill, PiLinkedinLogoFill, PiYoutubeLogoFill, PiWhatsappLogoFill,
   PiUserCircleBold,
 } from 'react-icons/pi'
@@ -1321,7 +1321,7 @@ export default function Profile({ onNavigate }) {
         <p className={styles.footerTagline}>Evolua com consistência, um dia de cada vez.</p>
 
         {/* Contato */}
-        <div className={styles.footerContact}>
+        {/* <div className={styles.footerContact}>
           <a href="mailto:contato@rootio.app" className={styles.footerContactItem}>
             <PiEnvelopeBold size={13}/> contato@rootio.app
           </a>
@@ -1331,7 +1331,7 @@ export default function Profile({ onNavigate }) {
           <span className={styles.footerContactItem}>
             <PiMapPinBold size={13}/> São Paulo, SP — Brasil
           </span>
-        </div>
+        </div> */}
 
         {/* Redes sociais */}
         <div className={styles.footerSocial}>
@@ -1402,9 +1402,9 @@ export default function Profile({ onNavigate }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
           }}>
             <div className="card" style={{ width: '100%', maxWidth: 320, padding: 22, display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <p style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', margin: 0 }}>Sair da conta?</p>
-              <p style={{ fontSize: 13, color: 'var(--ink2)', margin: 0, lineHeight: 1.5 }}>
-                Seus dados locais permanecem salvos no dispositivo. Você precisará entrar novamente para sincronizar.
+              <p style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', margin: 0 }}>Tem certeza que deseja sair?</p>
+              <p style={{ fontSize: 13, color: 'var(--ink2)', margin: 0, lineHeight: 1.6 }}>
+                Você será desconectado desta conta. Seus dados continuam salvos na nuvem e estarão disponíveis ao entrar novamente.
               </p>
               <button type="button" className="btn btn-primary" style={{ justifyContent: 'center', fontSize: 13, background: '#e74c3c', borderColor: '#c0392b' }}
                 onClick={async () => {
@@ -1413,7 +1413,7 @@ export default function Profile({ onNavigate }) {
                   localStorage.removeItem('ior_auth_skipped')
                   window.location.reload()
                 }}>
-                Sim, sair
+                Sair da conta
               </button>
               <button type="button" className="btn" style={{ justifyContent: 'center', fontSize: 13, border: '1.5px solid var(--border)', color: 'var(--ink3)' }}
                 onClick={() => setShowLogoutModal(false)}>

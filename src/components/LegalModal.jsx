@@ -15,9 +15,9 @@ const LEGAL_CONTENT = {
     sections: [
       {
         heading: '1. Sobre o Rootio',
-        text: `O Rootio é um aplicativo de desenvolvimento pessoal que funciona inteiramente no seu dispositivo. Todos os seus dados — hábitos, finanças, projetos, reflexões — são armazenados localmente no seu navegador (localStorage) e nunca são transmitidos a servidores externos sem sua autorização explícita.
+        text: `O Rootio é um aplicativo de desenvolvimento pessoal criado para ajudar pessoas a construir hábitos, organizar finanças, acompanhar projetos e refletir sobre sua evolução. O aplicativo funciona inteiramente no seu dispositivo — todos os seus dados são armazenados localmente no navegador (localStorage) e nunca são transmitidos a servidores externos sem sua autorização explícita.
 
-Este aplicativo foi desenvolvido como Trabalho de Conclusão de Curso (TCC) e está em fase de desenvolvimento ativo. Funcionalidades podem mudar ao longo do tempo.`,
+O Rootio está em desenvolvimento ativo e novas funcionalidades são adicionadas regularmente.`,
       },
       {
         heading: '2. Uso do Serviço',

@@ -4,16 +4,8 @@ Aplicativo de desenvolvimento pessoal que une rastreamento de hábitos, finança
 
 ---
 
-<<<<<<< HEAD
-<img width="1153" height="801" alt="project8" src="https://github.com/user-attachments/assets/ee4dfc19-ac08-438b-921a-746f24a4deba" />
-
-
 ## Visão Geral
 
-=======
-## Visão Geral
-
->>>>>>> 93f48be ((fix) prepare to upscale app with navigation map)
 | Área | O que faz |
 |---|---|
 | **Hábitos** | CRUD completo com subtarefas, prioridades, frequência personalizada e histórico |
@@ -38,134 +30,62 @@ Aplicativo de desenvolvimento pessoal que une rastreamento de hábitos, finança
 
 ---
 
-## Instalação
-
-```bash
-git clone https://github.com/seu-usuario/ioversoroot
-cd ioversoroot
-npm install
-npm run dev
-```
-
-**Opcional — IA (Mentor e sugestões de hábitos):**
-
-```bash
-# .env.local
-IA_KEY=sk-ant-...
-```
-
-Ou insira a chave diretamente em **Perfil → Preferências → Chave de API**.
-
+# Mapa de Navegação — Rootio
 ---
 
-## Scripts
-
-```bash
-npm run dev      # servidor de desenvolvimento
-npm run build    # build de produção
-npm run preview  # preview local do build
-```
-
----
-
-## Estrutura de Pastas
+## Estrutura de Rotas
 
 ```
-src/
-├── pages/          # telas da aplicação (lazy-loaded)
-│   ├── Home.jsx        → dashboard principal
-│   ├── Habits.jsx      → gerenciador de hábitos
-│   ├── Finance.jsx     → controle financeiro
-│   ├── Progress.jsx    → analytics e conquistas
-│   ├── Mentor.jsx      → chat com IA + diário
-│   ├── Career.jsx      → desenvolvimento de carreira
-│   ├── Projects.jsx    → projetos pessoais
-│   └── Profile.jsx     → perfil, loja e configurações
-│
-├── components/     # UI compartilhada
-│   ├── BottomNav.jsx   → navegação mobile
-│   ├── SideNav.jsx     → navegação desktop
-│   ├── Header.jsx      → cabeçalho mobile
-│   ├── Toast.jsx       → notificações globais
-│   ├── CheckBox.jsx    → checkbox animado acessível
-│   ├── OfflineBanner.jsx
-│   └── SplashScreen.jsx
-│
-├── context/
-│   └── AppContext.jsx  → estado global da aplicação
-│
-├── hooks/
-│   ├── useHabits.js    → métricas do dia atual
-│   ├── useStats.js     → analytics semanais/anuais
-│   └── useSound.js     → Web Audio API
-│
-├── services/
-│   ├── storage.js      → wrapper localStorage
-│   ├── levels.js       → sistema de progressão (6 níveis)
-│   ├── themes.js       → 9 temas com variáveis CSS
-│   └── claudeAPI.js    → integração Anthropic
-│
-└── styles/
-    └── global.css      → reset, variáveis, utilitários
+/                   → Home (dashboard)
+/habits             → Hábitos
+/finance            → Finanças
+/progress           → Experiência        ★ requer compra na loja
+/mentor             → Mentor             ★ requer compra na loja
+/career             → Carreira           ★ requer compra na loja
+/projects           → Projetos           ★ requer compra na loja
+/profile            → Perfil
+/*                  → redireciona para /
+```
+
+## Sincronização de Dados
+
+```
+Arquitetura: offline-first
+  localStorage → fonte primária (sempre disponível)
+  Supabase     → sincronização em background (quando logado)
+
+Fluxo de escrita (hábitos):
+  toggleHabit / saveHabit / addHabit / deleteHabit
+      │
+      ▼
+  setHabits (atualiza React state)
+      │
+      ├── saveStorage('nex_habits', ...)  ← imediato
+      │
+      └── upsertRows('habits', ...)       ← background (.catch warn)
+          (só se isLoggedIn && userId)
+
+Fluxo de leitura no login:
+  INITIAL_SESSION + !hasLocalData()
+      │
+      ▼
+  loadFromSupabase(userId)
+      │
+      ▼
+  applyRemoteData(data)  → salva em localStorage
+      │
+      ▼
+  window.location.reload()
+
+Tabelas sincronizadas:
+  habits · habit_history · transactions
+  financial_goals · emergency_fund
+  career_readings · career_goals · career_projects
+  life_projects · journal
 ```
 
 ---
 
-## Funcionalidades Principais
-
-### Sistema de Pontos (io)
-Cada hábito concluído gera pontos (`io`). Pontos acumulam para:
-- Subir de nível (6 tiers: Impulso → Raiz)
-- Comprar desbloqueáveis na Loja
-
-### Gamificação
-- **6 níveis** com mantras e barras de progresso
-- **8 conquistas** (badges) com critérios específicos
-- **3 desafios semanais** rotativos
-- Sons procedurais em todas as interações
-
-### Desbloqueáveis (Loja)
-Comprados com `io` acumulados:
-
-| ID | Item | Desbloqueia |
-|---|---|---|
-| `util_progress` | Página Experiência | Analytics completo + heatmap |
-| `util_career` | Página Carreira | Leituras, metas e projetos profissionais |
-| `util_projects` | Página Projetos | Projetos pessoais com milestones |
-| `util_mentor` | Página Mentor | Chat com IA + diário com PIN |
-| `avatar_*` | Avatares | 4 emojis exclusivos no perfil |
-
-### Plano Pro
-Ativado via Perfil → Plano. Desbloqueia:
-- **Insights** no dashboard (tendência 14 dias, melhor dia da semana, consistência 30d)
-- Acesso completo à aba Analytics no Progress
-
-### Temas
-9 temas disponíveis com transição suave: **Light, Dark, Midnight, Forest, Sakura, Desert, Dracula, Nord, Glass**
-
----
-
-## Armazenamento Local
-
-Todos os dados ficam no `localStorage` com prefixo `nex_`:
-
-```
-nex_habits              → array de hábitos
-nex_history             → histórico diário { "YYYY-MM-DD": {...} }
-nex_theme               → tema atual
-nex_sound               → preferência de som
-nex_shop_owned          → itens comprados na loja
-nex_plan                → "free" | "pro"
-nex_fin_transactions    → transações financeiras
-nex_fin_goals           → metas de economia
-nex_career_readings     → leituras e cursos
-nex_career_goals        → metas profissionais
-nex_journal_pin         → PIN do diário (hash btoa)
-```
-
-Exportação/importação JSON disponível em **Perfil → Dados**.
-
----
 
 ## Acessibilidade
 
@@ -176,16 +96,6 @@ Exportação/importação JSON disponível em **Perfil → Dados**.
 - `role="checkbox"` com `aria-checked` no componente CheckBox
 - Navegação por teclado em todos os elementos interativos
 - Contraste conforme WCAG 2.1
-
----
-
-## Deploy
-
-O projeto está configurado para deploy no **Vercel** (`.vercel/project.json` incluso). Qualquer push para `main` dispara o deploy automático.
-
-```bash
-vercel --prod  # deploy manual
-```
 
 ---
 
