@@ -87,7 +87,6 @@ function AppShell() {
   const [migrationChecked, setMigrationChecked]  = useState(false)
   const prevLoggedIn = useRef(null)
 
-
   // useLayoutEffect roda antes da pintura — evita flash do Layout antes do splash
   useLayoutEffect(() => {
     if (!loading) {
@@ -106,7 +105,7 @@ function AppShell() {
     if (check60Percent()) setShowPaywall(true)
   }, [loading, isLoggedIn])
 
-  // Oferta única de migração: exibe quando profile carregado, migration_done=false e há dados locais
+  // Oferta única de migração: dual-flag (Supabase + localStorage) previne reexibição no mobile
   useEffect(() => {
     if (isLoggedIn && !migrationChecked && profile) {
       setMigrationChecked(true)
@@ -116,7 +115,7 @@ function AppShell() {
       }
     }
     if (!isLoggedIn) setMigrationChecked(false)
-  }, [isLoggedIn, migrationChecked, profile])
+  }, [isLoggedIn, migrationChecked, profile, user])
 
   if (loading) return null
 

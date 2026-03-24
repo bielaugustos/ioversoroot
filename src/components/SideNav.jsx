@@ -1,29 +1,15 @@
+// src/components/SideNav.jsx
 // ══════════════════════════════════════
-// COMPONENTE: SideNav
-//
 // Barra lateral de navegação — visível
 // apenas em tablet/desktop (≥ 768px via CSS).
 // Em mobile o BottomNav assume essa função.
 //
-// Layout:
-//   [Brand: logo + streak]
-//   ─────────────────────
-//   Início / Hábitos / Finanças
-//   ── (divider) ──
-//   Experiência / Carreira / Projetos / Mentor  ← desbloqueáveis
-//   [espaço flexível]
-//   Perfil  ← sempre ao fundo
-//
 // ACESSIBILIDADE:
-//   • <aside aria-label="Navegação principal"> —
-//     landmark reconhecido por leitores de tela
-//   • <nav> interno para semântica correta
+//   • <aside aria-label="Navegação principal">
 //   • aria-current="page" no link ativo
 //   • Ícones com aria-hidden
-//   • streak: aria-label com texto completo
-//   • divider: aria-hidden — puramente visual
 // ══════════════════════════════════════
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   PiFlameFill,
@@ -36,13 +22,12 @@ import {
   PiRocketLaunchBold,
   PiRobotBold,
 } from 'react-icons/pi'
-import { useApp }   from '../context/AppContext'
-import { useStats } from '../hooks/useStats'
+import { useApp }              from '../context/AppContext'
+import { useStats }            from '../hooks/useStats'
+import { useUnlockableItem }   from '../hooks/useNav'
 import styles from './SideNav.module.css'
 
-// ══════════════════════════════════════
-// DEFINIÇÃO DOS ITENS DE NAVEGAÇÃO
-// ══════════════════════════════════════
+// ── Itens de navegação ──
 
 const BASE_NAV = [
   { to: '/',        label: 'Início',   Icon: PiHouseBold,          IconA: PiHouseFill          },
@@ -62,59 +47,7 @@ const UNLOCKABLE = [
   { id: 'util_mentor',   to: '/mentor',   label: 'Mentor',      Icon: PiRobotBold,        IconA: PiRobotBold        },
 ]
 
-// ══════════════════════════════════════
-// HELPER — lê itens comprados do storage
-// ══════════════════════════════════════
-function getOwned() {
-  try {
-    return new Set(JSON.parse(localStorage.getItem('nex_shop_owned') || '[]'))
-  } catch {
-    return new Set()
-  }
-}
-
-// ══════════════════════════════════════
-// HOOK: useUnlockableItem
-// (idêntico ao do BottomNav — candidato
-// a extração futura para hooks/useNav.js)
-// ══════════════════════════════════════
-function useUnlockableItem(id) {
-  const [visible, setVisible] = useState(() => getOwned().has(id))
-  const [animCls, setAnimCls] = useState(() => getOwned().has(id) ? 'visible' : 'hidden')
-  const prevRef = useRef(visible)
-
-  useEffect(() => {
-    function verificar() {
-      const comprados    = getOwned()
-      const desbloqueado = comprados.has(id)
-      if (desbloqueado === prevRef.current) return
-      prevRef.current = desbloqueado
-
-      if (desbloqueado) {
-        setVisible(true)
-        setAnimCls('entering')
-        setTimeout(() => setAnimCls('visible'), 550)
-      } else {
-        setAnimCls('leaving')
-        setTimeout(() => { setAnimCls('hidden'); setVisible(false) }, 420)
-      }
-    }
-
-    window.addEventListener('nex_shop_changed', verificar)
-    window.addEventListener('storage', e => {
-      if (e.key === 'nex_shop_owned') verificar()
-    })
-
-    return () => window.removeEventListener('nex_shop_changed', verificar)
-  }, [id])
-
-  return { visible, animCls }
-}
-
-// ══════════════════════════════════════
-// SUBCOMPONENTE: SideLink
-// Link de navegação com ícone + rótulo
-// ══════════════════════════════════════
+// ── SideLink — link com ícone + rótulo ──
 function SideLink({ to, label, Icon, IconA, extraClass }) {
   const { pathname } = useLocation()
   const isActive = to === '/' ? pathname === '/' : pathname.startsWith(to)
@@ -125,7 +58,6 @@ function SideLink({ to, label, Icon, IconA, extraClass }) {
       className={[styles.link, isActive && styles.active, extraClass].filter(Boolean).join(' ')}
       aria-current={isActive ? 'page' : undefined}
     >
-      {/* Ícone: decorativo — rótulo já comunica o destino */}
       <span className={styles.icon} aria-hidden="true">
         {isActive ? <IconA size={20} /> : <Icon size={20} />}
       </span>
@@ -134,10 +66,7 @@ function SideLink({ to, label, Icon, IconA, extraClass }) {
   )
 }
 
-// ══════════════════════════════════════
-// SUBCOMPONENTE: UnlockableItem
-// Item desbloqueável com animação de entrada/saída
-// ══════════════════════════════════════
+// ── UnlockableItem — item com animação de entrada/saída ──
 function UnlockableItem({ item }) {
   const { visible, animCls } = useUnlockableItem(item.id)
   if (!visible && animCls === 'hidden') return null
@@ -159,9 +88,7 @@ function UnlockableItem({ item }) {
   )
 }
 
-// ══════════════════════════════════════
-// COMPONENTE PRINCIPAL
-// ══════════════════════════════════════
+// ── Componente principal ──
 export function SideNav() {
   const { history } = useApp()
   const { streak }  = useStats(history)
@@ -180,7 +107,6 @@ export function SideNav() {
   return (
     <aside className={sideClass} aria-label="Navegação principal">
 
-      {/* ── Marca ── */}
       <div className={styles.brand}>
         <span className={styles.logo} aria-label="Rootio">../</span>
         {streak > 0 && (
@@ -194,10 +120,8 @@ export function SideNav() {
         )}
       </div>
 
-      {/* ── Links de navegação ── */}
       <nav className={styles.nav}>
 
-        {/* Botão colapsar — alinhado com os itens de nav */}
         <button
           type="button"
           className={styles.link}

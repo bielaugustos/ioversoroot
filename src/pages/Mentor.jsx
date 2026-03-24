@@ -17,6 +17,8 @@ import {
 import { toast } from '../components/Toast'
 import { streamMessage, buildMentorSystem } from '../services/claudeAPI'
 import { useApp } from '../context/AppContext'
+import { useAuth } from '../context/AuthContext'
+import { upsertRows, fetchRows, deleteRow } from '../services/supabase'
 import { playPinKeyDirect, playErrorDirect, playClickDirect, playSaveDirect } from '../hooks/useSound'
 import styles from './Mentor.module.css'
 
@@ -577,8 +579,28 @@ function MentorIA({ habits, history }) {
 // ══════════════════════════════════════
 // MENTOR — PÁGINA
 // ══════════════════════════════════════
+async function loadEntriesFromDB(userId) {
+  const { data } = await fetchRows('journal', userId)
+  if (data?.length > 0) {
+    const mapped = data.map(e => ({
+      id:     e.id,
+      text:   e.text,
+      mood:   e.mood,
+      tags:   e.tags   ?? [],
+      date:   e.date,
+      prompt: e.prompt ?? '',
+    }))
+    saveEntries(mapped)
+    return mapped
+  }
+  return null
+}
+
 export default function Mentor() {
   const { habits, history } = useApp()
+  const { isLoggedIn, user } = useAuth()
+  const userId = user?.id ?? null
+
   const [tab,     setTab]     = useState('diario')
   const [entries, setEntries] = useState(loadEntries)
   const [writing, setWriting] = useState(false)
@@ -588,13 +610,35 @@ export default function Mentor() {
   const [locked,  setLocked]  = useState(hasPin)
   const [pinMode, setPinMode] = useState(null)
 
+  useEffect(() => {
+    if (!isLoggedIn || !userId) return
+    loadEntriesFromDB(userId).then(entries => {
+      if (entries) setEntries(entries)
+    })
+  }, [isLoggedIn, userId])
+
   function handleSave(entry) {
     const updated = [entry, ...entries]
     setEntries(updated); saveEntries(updated); setWriting(false)
+    if (isLoggedIn && userId) {
+      upsertRows('journal', [{
+        id:      entry.id,
+        user_id: userId,
+        text:    entry.text,
+        mood:    entry.mood   ?? null,
+        tags:    entry.tags   ?? [],
+        date:    entry.date,
+        prompt:  entry.prompt ?? '',
+      }]).catch(e => console.warn('[Sync] journal add:', e))
+    }
   }
   function handleDelete(id) {
     const updated = entries.filter(e => e.id !== id)
     setEntries(updated); saveEntries(updated); toast('Reflexão removida.')
+    if (isLoggedIn && userId) {
+      deleteRow('journal', id, userId)
+        .catch(e => console.warn('[Sync] journal delete:', e))
+    }
   }
 
   const filtered = search.trim()

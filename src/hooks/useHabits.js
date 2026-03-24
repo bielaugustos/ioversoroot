@@ -15,9 +15,6 @@
 import { useMemo } from 'react'
 import { useApp }  from '../context/AppContext'
 
-// ══════════════════════════════════════
-// useHabits — estatísticas e ações do dia
-// ══════════════════════════════════════
 export function useHabits() {
   const {
     habits, history,

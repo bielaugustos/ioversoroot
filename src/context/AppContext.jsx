@@ -1,23 +1,15 @@
 // ══════════════════════════════════════
 // CONTEXTO GLOBAL — AppContext
 //
-// Estado central da aplicação. Contém:
-//   • habits   — lista de hábitos com migração segura
+// Estado central da aplicação:
+//   • habits   — lista de hábitos (com migração de versão)
 //   • history  — histórico diário de conclusões
 //   • theme    — tema de cores ativo
 //   • soundOn  — preferência de som
 //   • plan     — plano do usuário ('free' | 'pro')
 //
-// Ações expostas:
-//   toggleHabit, saveHabit, addHabit, deleteHabit, resetDay,
-//   setTheme, toggleTheme, setSoundOn, setPlan
-//
-// Persistência: localStorage com prefixo "nex_"
-// Reset automático: todos os dias à meia-noite (fuso local)
-//
-// Supabase-ready: quando migrar auth, mover `plan` para
-// ser derivado de user.user_metadata via hook usePlan.js.
-// O restante do contexto (habits, history…) pode coexistir.
+// Persistência: localStorage ("nex_*") + Supabase em background.
+// Reset automático de hábitos: todos os dias à meia-noite (fuso local).
 // ══════════════════════════════════════
 import {
   createContext, useContext, useState,
@@ -153,7 +145,7 @@ export function AppProvider({ children }) {
   const [soundOn,   setSoundOnSt]  = useState(() => loadStorage('nex_sound', true))
   const [plan,      setPlanState]  = useState(() => loadStorage('nex_plan', 'free'))
 
-  // ── Auth (passthrough offline-first — sync em background quando logado) ──
+  // ── Auth — sync em background quando logado ──
   const { isLoggedIn, user, profile } = useAuth()
   const userId = user?.id ?? null
 
@@ -270,11 +262,7 @@ export function AppProvider({ children }) {
     return () => clearTimeout(midnightTimer.current)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ══════════════════════════════════════
-  // AÇÕES — useCallback para identidade
-  // estável (evita re-renders desnecessários
-  // em componentes filhos que as recebem)
-  // ══════════════════════════════════════
+  // ── Ações — useCallback para identidade estável entre renders ──
 
   // Alterna o estado done de um hábito pelo id
   const toggleHabit = useCallback((id) => {
@@ -338,25 +326,18 @@ export function AppProvider({ children }) {
   }, [])
 
   // Define o tema pelo id (ex: 'dark', 'glass', 'sakura')
-  const setTheme = useCallback((id) => {
-    setThemeState(id)
-  }, [])
+  const setTheme = useCallback((id) => { setThemeState(id) }, [])
 
   // Alterna entre claro e escuro (atalho rápido)
   const toggleTheme = useCallback(() => {
     setThemeState(t => t === 'dark' ? 'light' : 'dark')
   }, [])
 
-  // Atualiza preferência de som (aceita valor ou função atualizadora)
-  const setSoundOn = useCallback((val) => {
-    setSoundOnSt(typeof val === 'function' ? val : () => val)
-  }, [])
+  // Atualiza preferência de som
+  const setSoundOn = useCallback((val) => { setSoundOnSt(val) }, [])
 
   // Define o plano do usuário ('free' | 'pro')
-  // Supabase: substituir por mutation na tabela de subscriptions
-  const setPlan = useCallback((val) => {
-    setPlanState(val)
-  }, [])
+  const setPlan = useCallback((val) => { setPlanState(val) }, [])
 
   // ── Valor exposto pelo contexto ──
   const value = {
@@ -368,11 +349,7 @@ export function AppProvider({ children }) {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
 
-// ══════════════════════════════════════
-// HOOK DE ACESSO
-// Lança erro descritivo se usado fora
-// do AppProvider — facilita debugging.
-// ══════════════════════════════════════
+// ── Hook de acesso ──
 export function useApp() {
   const ctx = useContext(AppContext)
   if (!ctx) throw new Error('useApp deve ser usado dentro de <AppProvider>')

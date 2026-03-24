@@ -1,22 +1,15 @@
+// src/components/OfflineBanner.jsx
 // ══════════════════════════════════════
-// COMPONENTE: OfflineBanner
+// Detecta perda/restauração de conexão.
 //
-// Detecta perda/restauração de conexão
-// e exibe um banner temporário.
+// Comportamento:
+//   Offline → banner persiste até reconectar
+//   Online  → exibe "Conexão restabelecida" por 2.5s
 //
 // ACESSIBILIDADE:
 //   • Offline → role="alert" + aria-live="assertive"
-//     Interrompe o leitor de tela imediatamente —
-//     perda de conexão é urgente.
 //   • Online  → role="status" + aria-live="polite"
-//     Anuncia quando conveniente — é informativo.
-//   • Ícones com aria-hidden — o texto já comunica
-//     o estado com clareza suficiente.
-//
-// Estado interno:
-//   null       → banner oculto
-//   'offline'  → sem conexão
-//   'online'   → conexão restaurada (auto-oculta em 2.5s)
+//   • Ícones com aria-hidden
 // ══════════════════════════════════════
 import { useState, useEffect, useRef } from 'react'
 import { PiWifiSlashBold, PiWifiHighBold } from 'react-icons/pi'
@@ -28,22 +21,20 @@ export function OfflineBanner() {
   )
   const timerOcultar = useRef(null)
 
-  // Exibe o banner por `ms` milissegundos, depois oculta
-  function mostrarPor(tipo, ms) {
-    clearTimeout(timerOcultar.current)
-    setEstado(tipo)
-    timerOcultar.current = setTimeout(() => setEstado(null), ms)
-  }
-
   useEffect(() => {
-    const aoOffline = () => mostrarPor('offline', 4000)
-    const aoOnline  = () => mostrarPor('online',  2500)
+    function aoOffline() {
+      clearTimeout(timerOcultar.current)
+      setEstado('offline')       // persiste até voltar a conexão
+    }
+
+    function aoOnline() {
+      clearTimeout(timerOcultar.current)
+      setEstado('online')
+      timerOcultar.current = setTimeout(() => setEstado(null), 2500)
+    }
 
     window.addEventListener('offline', aoOffline)
     window.addEventListener('online',  aoOnline)
-
-    // Se já começou sem conexão, exibe imediatamente
-    if (!navigator.onLine) mostrarPor('offline', 4000)
 
     return () => {
       clearTimeout(timerOcultar.current)
