@@ -1636,7 +1636,7 @@
 .filterChipActive[class*="tag"] { background:var(--gold-dk); border-color:var(--gold-dk); color:#fff; }
 
 /* ══ BLOCOS DE AÇÃO ══ */
-.block { padding: 0; overflow: hidden; margin: -12px -14px; }
+.block { padding: 0; overflow: hidden; }
 
 .blockHeader {
   display: flex;
@@ -1731,10 +1731,6 @@
   color: var(--ink2);
 }
 
-/* ══ DESKTOP ══ */
-@media (min-width: 1024px) {
-  .page { max-width: 700px; margin: 0 auto; }
-}
 
 /* ══════════════════════════════════════
    STEPS PROGRESS BAR
