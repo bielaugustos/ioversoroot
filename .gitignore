@@ -109,6 +109,8 @@ dist
 
 # Serverless directories
 .serverless/
+.env.local
+.env*.local
 
 # FuseBox cache
 .fusebox/

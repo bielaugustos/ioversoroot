@@ -106,11 +106,15 @@ function AppShell() {
   }, [loading, isLoggedIn])
 
   // Oferta única de migração: dual-flag (Supabase + localStorage) previne reexibição no mobile
+  // Apenas para usuários Pro (data_migration é feature Pro)
   useEffect(() => {
     if (isLoggedIn && !migrationChecked && profile) {
       setMigrationChecked(true)
       const localFlag = user ? localStorage.getItem(`ior_migration_offered_${user.id}`) : null
-      if (!profile.migration_done && !localFlag && hasLocalData()) {
+      // Verifica se o usuário tem plano Pro (armazenado em localStorage ou profile)
+      const userPlan = localStorage.getItem('nex_plan') || 'free'
+      const isPro = userPlan === 'pro'
+      if (isPro && !profile.migration_done && !localFlag && hasLocalData()) {
         setShowMigration(true)
       }
     }

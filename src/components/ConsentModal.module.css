@@ -1,0 +1,174 @@
+/* ══════════════════════════════════════
+   ConsentModal — Modal de consentimento LGPD
+   Segue o design core do app (neo-brutalist)
+   ══════════════════════════════════════ */
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 24px;
+}
+
+/* Modal principal */
+.modal {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 24px;
+  max-width: 340px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+
+/* Ícone */
+.icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  box-shadow: 2px 2px 0 var(--shadow);
+}
+
+/* Título */
+.title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
+  margin: 0;
+}
+
+/* Descrição */
+.desc {
+  font-size: 13px;
+  color: var(--ink3);
+  text-align: center;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Lista de dados */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Item da lista */
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 2px 2px 0 var(--shadow);
+}
+
+/* Label do item */
+.itemLabel {
+  flex: 1;
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Contador do item */
+.itemCount {
+  font-size: 12px;
+  font-weight: 700;
+  color: #111;
+  background: var(--gold);
+  border: 1.5px solid var(--gold-dk);
+  padding: 2px 10px;
+  border-radius: 4px;
+  min-width: 32px;
+  text-align: center;
+}
+
+/* Total */
+.total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 2px 2px 0 var(--shadow);
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.totalCount {
+  font-size: 16px;
+  font-weight: 900;
+  font-family: var(--font-display);
+  color: var(--ink);
+}
+
+/* Nota LGPD */
+.note {
+  font-size: 11px;
+  color: var(--ink3);
+  text-align: center;
+  line-height: 1.5;
+  margin: 4px 0 0 0;
+}
+
+/* Ações */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* Botão confirmar */
+.confirmBtn {
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  font-size: 13px;
+  gap: 6px;
+}
+
+/* Botão cancelar */
+.cancelBtn {
+  width: 100%;
+  justify-content: center;
+  padding: 11px;
+  font-size: 12px;
+  border: 2px solid var(--border);
+  color: var(--ink3);
+  background: var(--white);
+}
+
+.cancelBtn:hover {
+  background: var(--surface);
+  color: var(--ink);
+}

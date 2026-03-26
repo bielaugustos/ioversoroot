@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { signOut, updateProfile } from '../services/supabase'
 import { MigrationModal } from '../components/MigrationModal'
-import { hasLocalData, clearLocalData } from '../services/syncService'
+import { hasLocalData, clearLocalData, deleteAllData } from '../services/syncService'
 import {
   PiDownloadSimpleBold, PiUploadSimpleBold,
   PiArrowCounterClockwiseBold, PiCodeBold,
@@ -13,6 +13,7 @@ import {
   PiCalendarBold, PiLockSimpleBold,
   PiKeyBold, PiEyeBold, PiEyeSlashBold,
   PiCrownBold, PiCreditCardBold, PiXBold, PiSparkleBold,
+  PiTrashBold,
   // PiEnvelopeBold, PiMapPinBold, PiPhoneBold, // contato desativado
   PiInstagramLogoFill, PiLinkedinLogoFill, PiYoutubeLogoFill, PiWhatsappLogoFill,
   PiUserCircleBold,
@@ -1045,6 +1046,7 @@ export default function Profile({ onNavigate }) {
   const [showLogoutModal,      setShowLogoutModal]      = useState(false)
   const [showGuestExitModal,   setShowGuestExitModal]   = useState(false)
   const [showMigrationModal,setShowMigrationModal] = useState(false)
+  const [showDeleteModal,   setShowDeleteModal]    = useState(false)
   const legal = useLegal()
 
   const [ownedItems, setOwnedItems] = useState(() => {
@@ -1229,10 +1231,7 @@ export default function Profile({ onNavigate }) {
       <div className={styles.footer}>
 
         {/* Marca */}
-        <div className={styles.footerBrand}>
-          <span className={styles.footerLogo}>../</span>
-          <span className={styles.footerAppName}>Rootio</span>
-        </div>
+        <img src="/icons/icon.svg" alt="Rootio" width={90} height={90} className={styles.brandLogo} />
         <p className={styles.footerTagline}>Evolua com consistência, um dia de cada vez.</p>
 
         {/* Contato */}
@@ -1269,22 +1268,32 @@ export default function Profile({ onNavigate }) {
           <span className={styles.footerDot}>·</span>
           <button type="button" className={styles.footerLink} onClick={legal.openCookies}>Cookies</button>
         </div>
+
         <p className={styles.footerCopy}>© 2026 Rootio · Todos os direitos reservados</p>
         <p className={styles.footerVersion}>v0.1.0</p>
       </div>
 
+      {/* Botão de migração - visível para todos, desabilitado para Free */}
+      {hasLocalData() && (
+        <button type="button"
+          className={`${styles.logoutBtn} ${styles.migrateDataBtn} ${!can('data_migration') ? styles.disabledBtn : ''}`}
+          disabled={!can('data_migration')}
+          onClick={() => can('data_migration') && setShowMigrationModal(true)}
+          title={can('data_migration') ? 'Migrar dados para a nuvem' : 'Disponível apenas no plano Pro'}>
+          <PiUploadSimpleBold size={14}/> Migrar dados locais
+          {!can('data_migration') && <span className={styles.proBadge}>PRO</span>}
+        </button>
+      )}
+
       {/* Login / Logout */}
       {isLoggedIn ? (
         <>
-          {hasLocalData() && (
-            <button type="button"
-              className={`${styles.logoutBtn} ${styles.migrateDataBtn}`}
-              onClick={() => setShowMigrationModal(true)}>
-              <PiUploadSimpleBold size={14}/> Migrar dados locais
-            </button>
-          )}
           <button type="button" className={styles.logoutBtn} onClick={() => setShowLogoutModal(true)}>
             Sair da conta
+          </button>
+          <button type="button" className={`${styles.logoutBtn} ${styles.deleteDataBtn}`}
+            onClick={() => setShowDeleteModal(true)}>
+            <PiTrashBold size={14}/> Apagar meus dados
           </button>
         </>
       ) : (
@@ -1344,24 +1353,71 @@ export default function Profile({ onNavigate }) {
           background: 'rgba(0,0,0,0.55)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
         }}>
-          <div className="card" style={{ width: '100%', maxWidth: 320, padding: 22, display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <p style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', margin: 0 }}>Sair da conta?</p>
+          <div className="card" style={{ width: '100%', maxWidth: 340, padding: 22, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', margin: 0 }}>Sair do modo local?</p>
             <p style={{ fontSize: 13, color: 'var(--ink2)', margin: 0, lineHeight: 1.5 }}>
-              Todos os dados salvos neste dispositivo serão apagados. Esta ação não pode ser desfeita.
+              Você está usando o app sem uma conta. Escolha o que fazer com seus dados:
             </p>
             <button type="button" className="btn btn-primary"
-              style={{ justifyContent: 'center', fontSize: 13, background: '#e74c3c', borderColor: '#c0392b' }}
+              style={{ justifyContent: 'center', fontSize: 13 }}
+              onClick={() => {
+                setShowGuestExitModal(false)
+                localStorage.removeItem('ior_auth_skipped')
+                window.location.reload()
+              }}>
+              Manter dados localmente
+            </button>
+            <button type="button" className="btn"
+              style={{ justifyContent: 'center', fontSize: 13, background: '#fdf2f2', color: '#c0392b', borderColor: '#e74c3c' }}
               onClick={() => {
                 setShowGuestExitModal(false)
                 clearLocalData()
                 localStorage.removeItem('ior_auth_skipped')
                 window.location.reload()
               }}>
-              Sim, sair e apagar dados
+              <PiTrashBold size={14}/> Apagar tudo e sair
             </button>
             <button type="button" className="btn"
               style={{ justifyContent: 'center', fontSize: 13, border: '1.5px solid var(--border)', color: 'var(--ink3)' }}
               onClick={() => setShowGuestExitModal(false)}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de apagar dados (LGPD) */}
+      {showDeleteModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1200,
+          background: 'rgba(0,0,0,0.55)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+        }}>
+          <div className="card" style={{ width: '100%', maxWidth: 340, padding: 22, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <p style={{ fontSize: 15, fontWeight: 900, color: 'var(--ink)', margin: 0 }}>Apagar todos os dados?</p>
+            <p style={{ fontSize: 13, color: 'var(--ink2)', margin: 0, lineHeight: 1.5 }}>
+              Esta ação irá apagar <strong>todos os seus dados</strong> do dispositivo e da nuvem permanentemente. Esta ação não pode ser desfeita.
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--ink3)', margin: 0, lineHeight: 1.5 }}>
+              Inclui: hábitos, transações, metas, projetos, diário e configurações.
+            </p>
+            <button type="button" className="btn btn-primary"
+              style={{ justifyContent: 'center', fontSize: 13, background: '#e74c3c', borderColor: '#c0392b' }}
+              onClick={async () => {
+                setShowDeleteModal(false)
+                const result = await deleteAllData(user?.id)
+                if (result.success) {
+                  toast('Todos os dados foram apagados com sucesso.')
+                  await signOut()
+                } else {
+                  toast('Erro ao apagar dados: ' + result.errors.join(', '))
+                }
+              }}>
+              <PiTrashBold size={14}/> Sim, apagar tudo
+            </button>
+            <button type="button" className="btn"
+              style={{ justifyContent: 'center', fontSize: 13, border: '1.5px solid var(--border)', color: 'var(--ink3)' }}
+              onClick={() => setShowDeleteModal(false)}>
               Cancelar
             </button>
           </div>

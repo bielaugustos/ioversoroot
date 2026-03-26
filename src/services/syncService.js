@@ -42,6 +42,29 @@ export function hasLocalData() {
   })
 }
 
+// ── Resumo de dados locais para consentimento (LGPD) ──
+
+export function getDataSummary() {
+  const habits = loadStorage('nex_habits', [])
+  const history = loadStorage('nex_history', {})
+  const transactions = loadStorage('nex_fin_transactions', [])
+  const goals = loadStorage('nex_fin_goals', [])
+  const readings = loadStorage('nex_career_readings', [])
+  const careerProjects = loadStorage('nex_career_projects', [])
+  const lifeProjects = loadStorage('nex_projects', [])
+  const journal = loadStorage('nex_journal', [])
+
+  return {
+    habits: habits.length,
+    history: Object.keys(history).length,
+    transactions: transactions.length,
+    goals: goals.length,
+    readings: readings.length,
+    projects: careerProjects.length + lifeProjects.length,
+    journal: journal.length,
+  }
+}
+
 // ── Migração localStorage → Supabase ──
 
 export async function migrateLocalToSupabase(userId) {
@@ -77,12 +100,12 @@ export async function migrateLocalToSupabase(userId) {
   const finGoals = loadStorage('nex_fin_goals', [])
   await upsert('financial_goals', finGoals.map(g => ({ ...g, user_id: userId })))
 
-  // Reserva de emergência
+  // Reserva de emergência (tabela com unique constraint em user_id)
   const emergency = loadStorage('nex_fin_emergency', null)
   if (emergency) {
     await upsert('emergency_fund', [{
       user_id: userId, target: emergency.target ?? 0, current: emergency.current ?? 0,
-    }])
+    }], { onConflict: 'user_id' })
   }
 
   // Carreira
@@ -163,4 +186,34 @@ export async function loadFromSupabase(userId) {
   results.emergency = emFund ?? null
 
   return results
+}
+
+// ── Apagar todos os dados do Supabase (LGPD) ──
+
+export async function clearCloudData(userId) {
+  const errors = []
+
+  const tables = [
+    'habits', 'habit_history', 'transactions', 'financial_goals',
+    'emergency_fund', 'career_readings', 'career_goals',
+    'career_projects', 'life_projects', 'journal'
+  ]
+
+  for (const table of tables) {
+    const { error } = await supabase
+      .from(table)
+      .delete()
+      .eq('user_id', userId)
+    if (error) errors.push(`${table}: ${error.message}`)
+  }
+
+  return { success: errors.length === 0, errors }
+}
+
+// ── Apagar TUDO (local + nuvem) - LGPD ──
+
+export async function deleteAllData(userId) {
+  const cloudResult = await clearCloudData(userId)
+  clearLocalData()
+  return cloudResult
 }

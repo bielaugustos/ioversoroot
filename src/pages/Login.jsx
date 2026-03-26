@@ -80,9 +80,9 @@ export default function Login({ onSkip }) {
 
         {/* Header da marca */}
         <div className={styles.brand}>
-          <img src="/icons/icon.png" alt="Rootio" width={44} height={44} className={styles.brandLogo} />
+          <img src="/icons/icon.svg" alt="Rootio" width={90} height={90} className={styles.brandLogo} />
           <div className={styles.brandText}>
-            <span className={styles.brandName}>Rootio</span>
+            <span className={styles.brandName} color='green'>Rootio</span>
             <span className={styles.brandSub}>Sua evolução pessoal</span>
           </div>
         </div>
@@ -176,7 +176,7 @@ export default function Login({ onSkip }) {
           type="button"
           className={`btn ${styles.skipBtn}`}
           onClick={onSkip}>
-          Continuar sem conta
+          Usar sem conta (modo local)
         </button>
 
       </div>

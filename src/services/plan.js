@@ -38,6 +38,7 @@ export const FEATURES = {
   ai_daily_summary: 'pro',   // resumo diário personalizado via IA
   themes_exclusive: 'pro',   // temas Midnight, Forest, Sakura, Desert,
                              //         Dracula, Nord, Glass
+  data_migration:   'pro',   // migrar dados locais para a nuvem
 
   // ─── Pro OU item da loja ────────────────────────────────
   // Verificação especial: ver canAccess()

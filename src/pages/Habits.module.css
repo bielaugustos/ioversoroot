@@ -1636,7 +1636,7 @@
 .filterChipActive[class*="tag"] { background:var(--gold-dk); border-color:var(--gold-dk); color:#fff; }
 
 /* ══ BLOCOS DE AÇÃO ══ */
-.block { padding: 0; overflow: hidden; }
+.block { padding: 0; overflow: hidden; margin: -12px -14px; }
 
 .blockHeader {
   display: flex;
