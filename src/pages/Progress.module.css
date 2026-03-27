@@ -42,7 +42,7 @@
 .ptsSource { display: flex; align-items: flex-start; gap: 6px; font-size: 11px; color: var(--ink3); line-height: 1.5; background: var(--white); border: 1.5px solid var(--border); border-radius: 3px; padding: 8px 10px; margin: 8px 0; box-shadow: 1px 1px 0 var(--shadow); }
 
 /* ══ BARRAS SEMANA ══ */
-.weekBars  { display: flex; gap: 5px; align-items: flex-end; height: 52px; border-top: 1px solid var(--border); margin-top: 8px; padding-top: 6px; }
+.weekBars  { display: flex; gap: 5px; align-items: flex-end; height: 52px; margin-top: 12px; padding-top: 6px; }
 .wbarCol   { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; gap: 3px; }
 .wbarWrap  { flex: 1; width: 100%; display: flex; align-items: flex-end; }
 .wbar      { width: 100%; background: var(--surface); border: 1.5px solid var(--border); border-radius: 2px 2px 0 0; min-height: 3px; transition: height .4s; }
@@ -196,7 +196,7 @@
 .streakNums   { display: flex; align-items: baseline; gap: 1px; flex-shrink: 0; }
 .streakCur    { font-size: 13px; font-weight: 700; color: var(--ink); }
 .streakRec    { font-size: 10px; color: var(--ink3); font-weight: 700; }
-.streakLegend { display: flex; gap: 14px; font-size: 11px; color: var(--ink3); font-weight: 700; margin-top: 4px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.streakLegend { display: flex; gap: 14px; font-size: 11px; color: var(--ink3); font-weight: 700; margin-top: 4px; padding-top: 8px; }
 .legDot       { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
 
 /* Ranking consistência */

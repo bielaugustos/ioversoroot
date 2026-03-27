@@ -24,6 +24,7 @@ export default function Login({ onSkip }) {
 
   const isSignup = mode === 'signup'
   const isReset = mode === 'reset'
+  const [birthdate, setBirthdate] = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -65,6 +66,25 @@ export default function Login({ onSkip }) {
       setError('Digite um nome para o perfil.')
       return
     }
+    if (isSignup && !birthdate) {
+      setError('Informe sua data de nascimento.')
+      return
+    }
+
+    // Validar idade - usuário deve ter pelo menos 13 anos (COPPA)
+    if (isSignup && birthdate) {
+      const today = new Date()
+      const birth = new Date(birthdate)
+      const age = today.getFullYear() - birth.getFullYear() -
+        (today.getMonth() < birth.getMonth() ? 1 : 0) -
+        (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate() ? 1 : 0)
+
+      if (age < 13) {
+        setError('Você deve ter pelo menos 13 anos para criar uma conta.')
+        return
+      }
+    }
+
     if (password.length < 6) {
       setError('Senha deve ter pelo menos 6 caracteres.')
       return
@@ -73,7 +93,7 @@ export default function Login({ onSkip }) {
     setLoading(true)
     try {
       if (isSignup) {
-        const { error: err } = await signUp({ email, password, username })
+        const { error: err } = await signUp({ email, password, username, birthdate })
         if (err) {
           const msg = err.message ?? ''
           const low = msg.toLowerCase()
@@ -160,6 +180,24 @@ export default function Login({ onSkip }) {
                 autoComplete="name"
                 maxLength={40}
               />
+            </div>
+          )}
+
+          {isSignup && (
+            <div className={styles.field}>
+              <label className={styles.label}>Data de nascimento</label>
+              <input
+                className="input"
+                type="date"
+                placeholder="DD/MM/AAAA"
+                value={birthdate}
+                onChange={e => setBirthdate(e.target.value)}
+                autoComplete="bday"
+                max={new Date().toISOString().split('T')[0]}
+              />
+              <p style={{ fontSize: 11, color: 'var(--ink3)', margin: '4px 0 0 0', lineHeight: 1.4 }}>
+                Você deve ter pelo menos 13 anos para criar uma conta.
+              </p>
             </div>
           )}
 

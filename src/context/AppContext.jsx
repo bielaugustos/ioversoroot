@@ -18,7 +18,7 @@ import {
 import { loadStorage, saveStorage } from '../services/storage'
 import { applyTheme, initTheme }    from '../services/themes'
 import { useAuth }                  from './AuthContext'
-import { upsertRows, fetchRows, deleteRow } from '../services/supabase'
+import { upsertRows, fetchRows, deleteRow, updateProfilePoints } from '../services/supabase'
 
 // ══════════════════════════════════════
 // UTILITÁRIOS DE DATA
@@ -387,6 +387,42 @@ export function AppProvider({ children }) {
 
   // Define o plano do usuário ('free' | 'pro')
   const setPlan = useCallback((val) => { setPlanState(val) }, [])
+
+  // ── Sincronização de pontos com o perfil ──
+  // Calcula os pontos totais e atualiza no perfil do Supabase
+  useEffect(() => {
+    if (!isLoggedIn || !userId) return
+
+    // Calcular pontos totais (histórico + hoje)
+    const todayKey = new Date().toISOString().slice(0, 10)
+    const avgPtsPerHabit = habits.length > 0
+      ? Math.round(habits.reduce((a, h) => a + (h.pts ?? 15), 0) / habits.length)
+      : 15
+
+    const pontosPasados = Object.entries(history)
+      .filter(([date]) => date !== todayKey)
+      .reduce((acc, [, registro]) => {
+        return acc + ((registro?.done ?? 0) * avgPtsPerHabit)
+      }, 0)
+
+    // Calcular hábitos agendados para hoje
+    const todayDow = new Date().getDay()
+    const todayHabits = habits.filter(h => Array.isArray(h.days) && h.days.includes(todayDow))
+    
+    const pontosHoje = todayHabits
+      .filter(h => h.done)
+      .reduce((acc, h) => acc + (h.pts ?? 0), 0)
+
+    const totalPoints = pontosPasados + pontosHoje
+
+    // Atualizar pontos no perfil do Supabase
+    updateProfilePoints(userId, totalPoints)
+      .then(({ data }) => {
+        // Disparar evento para notificar que o perfil foi atualizado
+        window.dispatchEvent(new CustomEvent('profile-points-updated', { detail: { points: totalPoints } }))
+      })
+      .catch(e => console.warn('[Sync] updateProfilePoints:', e))
+  }, [isLoggedIn, userId, habits, history])
 
   // ── Valor exposto pelo contexto ──
   const value = {

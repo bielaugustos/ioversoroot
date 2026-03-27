@@ -188,16 +188,16 @@ function buildChallenges(habits, history) {
   const lastWeekTarget = Math.max(lastWeekDone + 1, 5)
 
   return [
-    { id:'c1',  Icon:PiCheckCircleFill,     title:'20 hábitos esta semana',     desc:'Some todos os hábitos concluídos de seg a dom.',         reward:'+50 io bônus',   target:20,             current:weekDone,      weekly:true },
-    { id:'c2',  Icon:PiFireBold,            title:'3 dias perfeitos',           desc:'Complete 100% dos hábitos em 3 dias diferentes.',        reward:'Badge Perfeito', target:3,              current:perfectDays,   weekly:true },
-    { id:'c3',  Icon:PiCalendarBold,        title:'Ativo 7 dias seguidos',      desc:'Complete ao menos 1 hábito por dia durante 7 dias.',     reward:'Badge Veterano', target:7,              current:activeDays,    weekly:true },
-    { id:'c4',  Icon:PiLightbulbBold,       title:'Arrancada',                  desc:'Complete 5 ou mais hábitos em um único dia.',            reward:'+20 io',         target:5,              current:maxDayDone },
-    { id:'c5',  Icon:PiSunBold,             title:'Segunda Determinada',        desc:'Complete ao menos 1 hábito na segunda-feira.',           reward:'+10 io',         target:1,              current:mondayActive },
-    { id:'c6',  Icon:PiArrowClockwiseBold,  title:'Fidelidade',                 desc:'Complete o mesmo hábito 5 vezes nesta semana.',          reward:'+25 io',         target:5,              current:bestHabitDays },
-    { id:'c7',  Icon:PiArrowUpBold,         title:'Superação',                  desc:'Supere o total de hábitos da semana passada.',           reward:'+35 io',         target:lastWeekTarget, current:weekDone },
-    { id:'c8',  Icon:PiTargetBold,          title:'Precisão',                   desc:'Tenha taxa acima de 80% em pelo menos 2 dias.',          reward:'+30 io',         target:2,              current:highRateDays },
-    { id:'c9',  Icon:PiFlagBold,            title:'Guerreiro de Fim de Semana', desc:'Complete hábitos no sábado ou domingo.',                 reward:'+15 io',         target:1,              current:weekendActive },
-    { id:'c10', Icon:PiLightningBold,       title:'Potência Máxima',            desc:'Complete 10 ou mais hábitos em um único dia.',           reward:'+40 io',         target:10,             current:maxDayDone },
+    { id:'c1',  Icon:PiCheckCircleFill,     title:'20 hábitos esta semana',     desc:'Some todos os hábitos concluídos de seg a dom.',         reward:'Conquista!',     target:20,             current:weekDone,      weekly:true },
+    { id:'c2',  Icon:PiFireBold,            title:'3 dias perfeitos',           desc:'Complete 100% dos hábitos em 3 dias diferentes.',        reward:'Conquista!',     target:3,              current:perfectDays,   weekly:true },
+    { id:'c3',  Icon:PiCalendarBold,        title:'Ativo 7 dias seguidos',      desc:'Complete ao menos 1 hábito por dia durante 7 dias.',     reward:'Conquista!',     target:7,              current:activeDays,    weekly:true },
+    { id:'c4',  Icon:PiLightbulbBold,       title:'Arrancada',                  desc:'Complete 5 ou mais hábitos em um único dia.',            reward:'Conquista!',     target:5,              current:maxDayDone },
+    { id:'c5',  Icon:PiSunBold,             title:'Segunda Determinada',        desc:'Complete ao menos 1 hábito na segunda-feira.',           reward:'Conquista!',     target:1,              current:mondayActive },
+    { id:'c6',  Icon:PiArrowClockwiseBold,  title:'Fidelidade',                 desc:'Complete o mesmo hábito 5 vezes nesta semana.',          reward:'Conquista!',     target:5,              current:bestHabitDays },
+    { id:'c7',  Icon:PiArrowUpBold,         title:'Superação',                  desc:'Supere o total de hábitos da semana passada.',           reward:'Conquista!',     target:lastWeekTarget, current:weekDone },
+    { id:'c8',  Icon:PiTargetBold,          title:'Precisão',                   desc:'Tenha taxa acima de 80% em pelo menos 2 dias.',          reward:'Conquista!',     target:2,              current:highRateDays },
+    { id:'c9',  Icon:PiFlagBold,            title:'Guerreiro de Fim de Semana', desc:'Complete hábitos no sábado ou domingo.',                 reward:'Conquista!',     target:1,              current:weekendActive },
+    { id:'c10', Icon:PiLightningBold,       title:'Potência Máxima',            desc:'Complete 10 ou mais hábitos em um único dia.',           reward:'Conquista!',     target:10,             current:maxDayDone },
   ]
 }
 
@@ -207,13 +207,18 @@ function buildChallenges(habits, history) {
 function BadgeCard({ badge, habits, history, streak, allPoints, prevEarned }) {
   const earned       = badge.check(habits, history, streak, allPoints)
   const justUnlocked = earned && !prevEarned.has(badge.id)
-  const { soundOn }  = useApp()
+  const { soundOn } = useApp()
   const { playBadge } = useSound(soundOn)
   const [showHow, setShowHow] = useState(false)
-
+ 
   useEffect(() => {
-    if (justUnlocked) { playBadge(); toast(`"${badge.name}" conquistado!`) }
-  }, [justUnlocked])
+    if (justUnlocked) {
+      playBadge();
+      toast(`"${badge.name}" conquistado!`)
+      // Salva apenas a conquista (sem pontos)
+      localStorage.setItem('nex_earned_badges', JSON.stringify([...prevEarned, badge.id]))
+    }
+  }, [justUnlocked, prevEarned, badge.id])
 
   const prog = badge.progress(habits, history, streak, allPoints)
   const lbl  = badge.label(habits, history, streak, allPoints)
@@ -341,8 +346,8 @@ function WeekdayChart({ history }) {
       </div>
       {showGuide && <ChartGuidePanel steps={WEEKDAY_GUIDE}/>}
       <div className={styles.wdChart}>
-        {data.map(d => (
-          <div key={d.lbl} className={styles.wdCol}>
+        {data.map((d, i) => (
+          <div key={`${d.lbl}-${i}`} className={styles.wdCol}>
             <span className={styles.wdPct}>{d.rate !== null ? `${d.rate}%` : '—'}</span>
             <div className={styles.wdBarWrap}>
               <div className={styles.wdBar} style={{
@@ -417,7 +422,7 @@ function TrendChart({ history }) {
         <svg viewBox={`0 0 ${W} ${H + 4}`} width="100%" style={{ overflow: 'visible' }}>
           {[25, 50, 75, 100].map(v => (
             <line key={v} x1={0} y1={Math.round(H - v/max*H)} x2={W} y2={Math.round(H - v/max*H)}
-              stroke="var(--border)" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.4"/>
+              stroke="var(--border)" strokeWidth="0.5" strokeDasharray="3 3" opacity="0"/>
           ))}
           <polygon points={`0,${H} ${polyline} ${W},${H}`} fill={AMBER} fillOpacity="0.15"/>
           <polyline points={polyline} fill="none" stroke={AMBER} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -818,6 +823,24 @@ export default function Progress() {
                 <span className={styles.levelName} style={{ color: level.color }}>{level.name}</span>
                 <span className={styles.levelDesc}>{level.mantra}</span>
               </div>
+              <div className={styles.ptsSource}>
+                <PiArrowUpBold size={12} color="var(--gold-dk)"/>
+                <span>
+                  {todayDone.length > 0 ? (
+                    <>
+                      Hoje: <strong>+{todayPts} io</strong> de {todayDone.length} hábito{todayDone.length!==1?'s':''} concluído{todayDone.length!==1?'s':''}
+                      {streak > 0 && <> • Sequência de <strong>{streak} dia{streak!==1?'s':''}</strong>! 🎉</>}
+                    </>
+                  ) : (
+                    <>
+                      Comece hoje! Crie hábitos e mantenha a sequência para evoluir 🚀
+                      {habits.length === 0 && <> • Adicione seu primeiro hábito em "Hábitos"</>}
+                    </>
+                  )}
+                  {habits.length > 0 && todayDone.length === 0 && <> • Complete seus hábitos para ganhar pontos</>}
+                  {habits.length > 0 && todayDone.length > 0 && <> <br></br>• Cada hábito vale entre 0 e 30 io (configurável em Hábitos)</>}
+                </span>
+              </div>
               <span className={styles.ptsChip}>{allPoints} io</span>
             </div>
             {level.next && (
@@ -828,13 +851,6 @@ export default function Progress() {
                 <p className={styles.xpHint}>{allPoints} / {level.next} io → {level.nextName ?? 'próximo nível'}</p>
               </>
             )}
-            <div className={styles.ptsSource}>
-              <PiArrowUpBold size={12} color="var(--gold-dk)"/>
-              <span>
-                Hoje: <strong>+{todayPts} io</strong> de {todayDone.length} hábito{todayDone.length!==1?'s':''} concluído{todayDone.length!==1?'s':''}
-                {habits.length > 0 && <> <br></br>• Cada hábito vale entre 0 e 30 io (configurável em Hábitos)</>}
-              </span>
-            </div>
             <div className={styles.weekBars}>
               {last7.map(d => (
                 <div key={d.date} className={styles.wbarCol}>

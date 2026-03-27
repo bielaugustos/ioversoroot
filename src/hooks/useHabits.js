@@ -12,7 +12,7 @@
 // que componentes não precisem importar
 // useApp diretamente.
 // ══════════════════════════════════════
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useApp }  from '../context/AppContext'
 
 export function useHabits() {
@@ -20,6 +20,7 @@ export function useHabits() {
     habits, history,
     toggleHabit, saveHabit, addHabit, deleteHabit,
   } = useApp()
+
 
   // Dia da semana atual (0 = Dom … 6 = Sáb)
   const todayDow = new Date().getDay()
@@ -39,17 +40,19 @@ export function useHabits() {
 
   // ── Pontos ganhos hoje ──
   // Soma os pts apenas dos hábitos concluídos hoje.
-  const totalPoints = habits
+  const totalPoints = todayHabits
     .filter(h => h.done)
     .reduce((acc, h) => acc + (h.pts ?? 0), 0)
 
   // ── Média de pontos por hábito ──
   // Usada para estimar pontos em dias do histórico
   // onde o valor real não foi armazenado.
+  // Calcula a média APENAS dos hábitos concluídos hoje
   const avgPtsPerHabit = useMemo(() => {
-    if (!habits.length) return 15
-    const soma = habits.reduce((a, h) => a + (h.pts ?? 15), 0)
-    return Math.round(soma / habits.length)
+    const doneHabits = habits.filter(h => h.done)
+    if (!doneHabits.length) return 15
+    const soma = doneHabits.reduce((a, h) => a + (h.pts ?? 15), 0)
+    return Math.round(soma / doneHabits.length)
   }, [habits])
 
   // ── Pontos acumulados (histórico + hoje) ──
@@ -57,13 +60,13 @@ export function useHabits() {
   // então estimamos com a média atual. Hoje usa totalPoints real.
   const allPoints = useMemo(() => {
     const todayKey = new Date().toISOString().slice(0, 10)
-
+  
     const pontosPasados = Object.entries(history)
       .filter(([date]) => date !== todayKey)
       .reduce((acc, [, registro]) => {
         return acc + ((registro?.done ?? 0) * avgPtsPerHabit)
       }, 0)
-
+  
     return pontosPasados + totalPoints
   }, [history, totalPoints, avgPtsPerHabit])
 

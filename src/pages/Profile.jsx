@@ -519,7 +519,7 @@ function ApiKeyCard() {
 // CONFIGURAÇÕES DE CONTA
 // ══════════════════════════════════════
 function AccountSettingsCard() {
-  const { user } = useAuth()
+  const { user, profile, reloadProfile, isLoggedIn } = useAuth()
   const [open, setOpen] = useState(false)
 
   // Estados para trocar email
@@ -535,7 +535,58 @@ function AccountSettingsCard() {
   const [showPasswordForm, setShowPasswordForm] = useState(false)
   const [showPasswords, setShowPasswords] = useState(false)
 
+  // Estados para editar data de nascimento
+  const [birthdate, setBirthdate] = useState('')
+  const [birthdateLoading, setBirthdateLoading] = useState(false)
+  const [showBirthdateForm, setShowBirthdateForm] = useState(false)
+
   const currentEmail = user?.email || ''
+  const currentBirthdate = profile?.birthdate || null
+
+  // Formatar data para exibição (DD/MM/AAAA)
+  const formatBirthdate = (dateStr) => {
+    if (!dateStr) return 'Não informada'
+    try {
+      const date = new Date(dateStr + 'T00:00:00')
+      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    } catch {
+      return 'Não informada'
+    }
+  }
+
+  // Calcular idade a partir da data de nascimento
+  const calculateAge = (dateStr) => {
+    if (!dateStr) return null
+    try {
+      const today = new Date()
+      const birth = new Date(dateStr + 'T00:00:00')
+      const age = today.getFullYear() - birth.getFullYear() -
+        (today.getMonth() < birth.getMonth() ? 1 : 0) -
+        (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate() ? 1 : 0)
+      return age
+    } catch {
+      return null
+    }
+  }
+
+  // Sincronizar birthdate do profile ao carregar
+  useEffect(() => {
+    if (profile?.birthdate) {
+      setBirthdate(profile.birthdate)
+    }
+  }, [profile?.birthdate])
+
+  // Recarregar perfil quando os pontos são atualizados
+  useEffect(() => {
+    const handlePointsUpdated = (e) => {
+      if (reloadProfile) {
+        reloadProfile()
+      }
+    }
+
+    window.addEventListener('profile-points-updated', handlePointsUpdated)
+    return () => window.removeEventListener('profile-points-updated', handlePointsUpdated)
+  }, [reloadProfile])
 
   async function handleEmailChange(e) {
     e.preventDefault()
@@ -603,6 +654,47 @@ function AccountSettingsCard() {
     }
   }
 
+  async function handleBirthdateChange(e) {
+    e.preventDefault()
+    if (!birthdate) {
+      toast('Selecione uma data de nascimento.')
+      return
+    }
+
+    // Validar idade - usuário deve ter pelo menos 13 anos (COPPA)
+    const today = new Date()
+    const birth = new Date(birthdate)
+    const age = today.getFullYear() - birth.getFullYear() -
+      (today.getMonth() < birth.getMonth() ? 1 : 0) -
+      (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate() ? 1 : 0)
+
+    if (age < 13) {
+      toast('Você deve ter pelo menos 13 anos para usar o app.')
+      return
+    }
+
+    if (age > 150) {
+      toast('Data de nascimento inválida.')
+      return
+    }
+
+    setBirthdateLoading(true)
+    try {
+      const { error } = await updateProfile(user.id, { birthdate })
+      if (error) {
+        toast('Erro ao atualizar data de nascimento: ' + error.message)
+        return
+      }
+      toast('Data de nascimento atualizada com sucesso!')
+      setShowBirthdateForm(false)
+      reloadProfile()
+    } catch (err) {
+      toast('Erro ao atualizar data de nascimento. Tente novamente.')
+    } finally {
+      setBirthdateLoading(false)
+    }
+  }
+
   return (
     <div className={styles.shopWrapper}>
       <div className={styles.shopTrigger} onClick={() => setOpen(o => !o)} role="button" tabIndex={0}
@@ -611,7 +703,7 @@ function AccountSettingsCard() {
         <div style={{ flex:1 }}>
           <span className={styles.settingLabel}>Configurações de conta</span>
           <p className={styles.settingDesc}>
-            Alterar e-mail e senha
+            Alterar e-mail, senha e data de nascimento
           </p>
         </div>
         <span className={`${styles.shopArrow} ${open ? styles.shopArrowOpen : ''}`}>
@@ -674,6 +766,99 @@ function AccountSettingsCard() {
                 </button>
               </div>
             </form>
+          )}
+
+          {/* Data de nascimento */}
+          <div style={{ background:'var(--surface)', border:'1.5px solid var(--border)', borderRadius:4, padding:'10px 12px' }}>
+            <p style={{ fontSize:10, fontWeight:700, color:'var(--ink2)', margin:'0 0 4px 0', textTransform:'uppercase', letterSpacing:'0.8px' }}>
+              Data de nascimento
+            </p>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+              <div>
+                <p style={{ fontSize:13, color:'var(--ink)', margin:0 }}>
+                  {formatBirthdate(currentBirthdate)}
+                </p>
+                {calculateAge(currentBirthdate) && (
+                  <p style={{ fontSize:11, color:'var(--ink2)', margin:'2px 0 0 0' }}>
+                    {calculateAge(currentBirthdate)} anos
+                  </p>
+                )}
+              </div>
+              {!showBirthdateForm ? (
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ padding:'6px 10px', fontSize:11 }}
+                  onClick={() => { setBirthdate(currentBirthdate || ''); setShowBirthdateForm(true) }}>
+                  <PiPencilSimpleBold size={13}/> Editar
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ padding:'6px 10px', fontSize:11 }}
+                  onClick={() => { setShowBirthdateForm(false); setBirthdate(currentBirthdate || '') }}>
+                  Cancelar
+                </button>
+              )}
+            </div>
+          </div>
+
+          {showBirthdateForm && (
+            <form onSubmit={handleBirthdateChange} style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              <div>
+                <label style={{ fontSize:11, fontWeight:700, color:'var(--ink2)', display:'block', marginBottom:4 }}>
+                  Nova data de nascimento
+                </label>
+                <input
+                  className="input"
+                  type="date"
+                  value={birthdate}
+                  onChange={e => setBirthdate(e.target.value)}
+                  autoComplete="bday"
+                  max={new Date().toISOString().split('T')[0]}
+                  style={{ fontSize:12 }}
+                />
+                <p style={{ fontSize:10, color:'var(--ink3)', margin:'4px 0 0 0', lineHeight:1.4 }}>
+                  Você deve ter pelo menos 13 anos para usar o app.
+                </p>
+              </div>
+              <div style={{ display:'flex', gap:8 }}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={birthdateLoading}
+                  style={{ flex:1, fontSize:12 }}>
+                  {birthdateLoading ? 'Atualizando...' : 'Salvar'}
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => { setShowBirthdateForm(false); setBirthdate(currentBirthdate || '') }}
+                  style={{ fontSize:12 }}>
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Pontos (io) - apenas para usuários logados */}
+          {isLoggedIn && (
+            <div style={{ background:'var(--surface)', border:'1.5px solid var(--border)', borderRadius:4, padding:'10px 12px' }}>
+              <p style={{ fontSize:10, fontWeight:700, color:'var(--ink2)', margin:'0 0 4px 0', textTransform:'uppercase', letterSpacing:'0.8px' }}>
+                Pontos totais (io)
+              </p>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+                <div>
+                  <p style={{ fontSize:13, color:'var(--ink)', margin:0 }}>
+                    {profile?.points ?? 0} io
+                  </p>
+                  <p style={{ fontSize:11, color:'var(--ink2)', margin:'2px 0 0 0' }}>
+                    Armazenados na nuvem
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Divider */}
@@ -1302,7 +1487,7 @@ export default function Profile({ onNavigate }) {
   const { streak, daysActive } = useStats(history)
   const { can }                = usePlan()
 
-  const { isLoggedIn, user } = useAuth()
+  const { isLoggedIn, user, profile } = useAuth()
   const [shopOpen,          setShopOpen]          = useState(false)
   const [showLogoutModal,      setShowLogoutModal]      = useState(false)
   const [showGuestExitModal,   setShowGuestExitModal]   = useState(false)

@@ -77,11 +77,11 @@ const BADGES = [
   },
   {
     id: 'pts500', Icon: PiCoinsBold, name: 'Acumulador',
-    desc: 'Acumule 500 pontos no total',
-    howto: 'Complete hábitos diariamente até atingir 500 pts',
+    desc: 'Acumule 500 io no total',
+    howto: 'Complete hábitos diariamente até atingir 500 io',
     check: (_,__,___,pts) => pts >= 500,
     progress: (_,__,___,pts) => Math.min(100, Math.round(pts/500*100)),
-    label: (_,__,___,pts) => `${Math.min(pts,500)}/500 pts`,
+    label: (_,__,___,pts) => `${Math.min(pts,500)}/500 io`,
   },
 ]
 
@@ -131,10 +131,15 @@ function BadgeCard({ badge, habits, history, streak, allPoints, prevEarned }) {
   const { soundOn } = useApp()
   const { playBadge } = useSound(soundOn)
   const [showHow, setShowHow] = useState(false)
-
+ 
   useEffect(() => {
-    if (justUnlocked) { playBadge(); toast(`"${badge.name}" conquistado!`) }
-  }, [justUnlocked])
+    if (justUnlocked) {
+      playBadge();
+      toast(`"${badge.name}" conquistado!`)
+      // Salva apenas a conquista (sem pontos)
+      localStorage.setItem('nex_earned_badges', JSON.stringify([...prevEarned, badge.id]))
+    }
+  }, [justUnlocked, prevEarned, badge.id])
 
   const prog = badge.progress(habits, history, streak, allPoints)
   const lbl  = badge.label(habits, history, streak, allPoints)

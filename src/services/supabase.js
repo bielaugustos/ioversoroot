@@ -33,11 +33,11 @@ export const supabase = (SUPABASE_URL && SUPABASE_ANON)
 
 // ── Auth helpers ───────────────────────────────────────
 
-export async function signUp({ email, password, username }) {
+export async function signUp({ email, password, username, birthdate }) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { username } },
+    options: { data: { username, birthdate } },
   })
   return { data, error }
 }
@@ -122,6 +122,18 @@ export async function updatePassword(newPassword) {
   const { data, error } = await supabase.auth.updateUser({
     password: newPassword
   })
+  return { data, error }
+}
+
+// ── Pontos do perfil ──────────────────────────────────────
+
+export async function updateProfilePoints(userId, points) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ points, updated_at: new Date().toISOString() })
+    .eq('id', userId)
+    .select()
+    .single()
   return { data, error }
 }
 
