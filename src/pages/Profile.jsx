@@ -962,7 +962,7 @@ function AccountSettingsCard() {
 }
 
 // ══════════════════════════════════════
-// PLANOS — Free vs Pro + checkout fictício
+// PLANOS — Free vs Pro + checkout real
 // ══════════════════════════════════════
 const FREE_FEATURES = [
   'Até 10 hábitos',

@@ -146,7 +146,7 @@ export function AppProvider({ children }) {
   const [plan,      setPlanState]  = useState(() => loadStorage('nex_plan', 'free'))
 
   // ── Auth — sync em background quando logado ──
-  const { isLoggedIn, user, profile } = useAuth()
+  const { isLoggedIn, user, profile, session } = useAuth()
   const userId = user?.id ?? null
 
   // ── Efeitos de persistência e sincronização ──
@@ -174,6 +174,18 @@ export function AppProvider({ children }) {
   // Carrega hábitos e histórico do Supabase quando o usuário loga
   useEffect(() => {
     if (!isLoggedIn || !userId) return
+    
+    // Só carregar dados do Supabase se usuário entrou com senha (tem session)
+    const userEnteredWithPassword = !!session?.user
+    if (!userEnteredWithPassword) return
+    
+    // Verificar se já existem dados locais para não sobrescrever
+    const localHabits = loadStorage('nex_habits', [])
+    const localHistory = loadStorage('nex_history', {})
+    const hasLocalData = localHabits.length > 0 || Object.keys(localHistory).length > 0
+    
+    // Se já tem dados locais, não sobrescrever com dados do Supabase
+    if (hasLocalData) return
 
     async function loadFromDB() {
       const { data: habitsData } = await fetchRows('habits', userId)
@@ -198,11 +210,18 @@ export function AppProvider({ children }) {
     }
 
     loadFromDB()
-  }, [isLoggedIn, userId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, userId, session]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Sincroniza histórico com Supabase em background sempre que mudar
+  // Sincroniza histórico com Supabase em background apenas quando usuário entrou com senha
   useEffect(() => {
     if (!isLoggedIn || !userId) return
+    
+    // Verificar se usuário entrou com senha (tem token de autenticação)
+    const userEnteredWithPassword = !!session?.user
+    
+    // Só sincronizar se usuário entrou com senha
+    if (!userEnteredWithPassword) return
+    
     const entries = Object.entries(history)
     if (entries.length === 0) return
 
@@ -216,7 +235,7 @@ export function AppProvider({ children }) {
 
     upsertRows('habit_history', rows, { onConflict: 'user_id,date' })
       .catch(e => console.warn('[Sync] history:', e))
-  }, [history, isLoggedIn, userId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [history, isLoggedIn, userId, session]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persiste hábitos e registra o dia atual no histórico
   useEffect(() => {
@@ -320,7 +339,9 @@ export function AppProvider({ children }) {
       if (isLoggedIn && userId) {
         const habit = updated.find(h => h.id === id)
         if (habit) {
-          upsertRows('habits', [{ ...habit, user_id: userId }])
+          const habitToSync = { ...habit, user_id: userId }
+          console.log('[AppContext] Enviando hábito para Supabase:', habitToSync)
+          upsertRows('habits', [habitToSync])
             .catch(e => console.warn('[Sync] toggleHabit:', e))
         }
       }

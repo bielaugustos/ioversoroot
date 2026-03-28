@@ -4,7 +4,7 @@ Um app de crescimento pessoal que combina rastreamento de hábitos, finanças, c
 
 ![alt text](public/icons/preview.webp)
 
-<p style="color:pink"> Imagem de exenplo: (Se fosse gerado pela IA desta era, seriam muitas excessões e parâmetros) </p>
+<span style="color:pink">Imagem de exenplo: (Se fosse gerado pela IA desta era, seriam muitas excessões e parâmetros)</span>
 
 ---
 
@@ -12,7 +12,7 @@ Um app de crescimento pessoal que combina rastreamento de hábitos, finanças, c
 
 | Módulo |Features |
 |--------|----------|
-| **Hábitos** | CRUD completo, subtarefas, prioridades, frequência自定义 e histórico |
+| **Hábitos** | CRUD completo, subtarefas, prioridades, frequência e histórico |
 | **Finanças** | Registra receitas/despesas, metas de economia e fundo de emergência |
 | **Progresso** | Dashboard analytics com heatmap 52 semanas, sequências e badges |
 | **Carreira** | Acompanha leituras, metas profissionais e projetos |

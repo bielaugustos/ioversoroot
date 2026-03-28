@@ -71,20 +71,6 @@ export default function Login({ onSkip }) {
       return
     }
 
-    // Validar idade - usuário deve ter pelo menos 13 anos (COPPA)
-    if (isSignup && birthdate) {
-      const today = new Date()
-      const birth = new Date(birthdate)
-      const age = today.getFullYear() - birth.getFullYear() -
-        (today.getMonth() < birth.getMonth() ? 1 : 0) -
-        (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate() ? 1 : 0)
-
-      if (age < 13) {
-        setError('Você deve ter pelo menos 13 anos para criar uma conta.')
-        return
-      }
-    }
-
     if (password.length < 6) {
       setError('Senha deve ter pelo menos 6 caracteres.')
       return

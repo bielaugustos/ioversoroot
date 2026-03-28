@@ -1,5 +1,5 @@
 // src/context/AuthContext.jsx
-// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // IOROOT — Contexto de Autenticação
 //
 // Offline-first: todas as chamadas de rede usam try/catch
@@ -8,12 +8,9 @@
 //
 // Quando a conexão é restaurada:
 //   • Recarrega o perfil do usuário autenticado
-//   • Os contextos (AppContext, Finance…) re-sincronizam
-//     via seus próprios useEffects ao mudar isLoggedIn/userId
-// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { supabase, getSession, getProfile, onAuthChange } from '../services/supabase'
-import { loadFromSupabase, hasLocalData, applyRemoteData } from '../services/syncService'
 
 const AuthContext = createContext(null)
 
@@ -55,7 +52,9 @@ export function AuthProvider({ children }) {
     getSession()
       .then(async (s) => {
         setSession(s)
-        if (s?.user) await loadProfile(s.user.id)
+        if (s?.user) {
+          await loadProfile(s.user.id)
+        }
         setLoading(false)
       })
       .catch(() => {
@@ -66,28 +65,6 @@ export function AuthProvider({ children }) {
     // Escuta mudanças de auth (login, logout, token refresh)
     const { data: { subscription } } = onAuthChange(async (event, s) => {
       if (s?.user) {
-        // ── Sync inicial: só em INITIAL_SESSION sem dados locais (ex: novo dispositivo) ──
-        // SIGNED_IN ignorado para evitar loop: reload → sync → reload
-        const shouldSync = event === 'INITIAL_SESSION' && !hasLocalData()
-
-        if (shouldSync) {
-          try {
-            const remoteData = await withTimeout(loadFromSupabase(s.user.id), 8000)
-            const hasRemote  = [
-              remoteData.habits, remoteData.transactions, remoteData.journal,
-              remoteData.career_readings, remoteData.life_projects,
-            ].some(arr => arr?.length > 0)
-
-            if (hasRemote) {
-              applyRemoteData(remoteData)
-              window.location.reload()
-              return
-            }
-          } catch {
-            // Offline — pula sync inicial, segue com dados locais
-          }
-        }
-
         setSession(s)
         await loadProfile(s.user.id)
       } else {

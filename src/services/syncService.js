@@ -1,18 +1,18 @@
 // src/services/syncService.js
 // ══════════════════════════════════════
-// Sincronização bidirecional: localStorage ↔ Supabase.
+// Sincronização bidirecional: IndexedDB ↔ Supabase.
 //
 // Funções exportadas:
 //   hasLocalData()           — detecta dados locais
 //   migrateLocalToSupabase() — sobe dados locais para a nuvem
-//   applyRemoteData()        — aplica dados da nuvem no localStorage
-//   clearLocalData()         — limpa localStorage após migração
+//   applyRemoteData()        — aplica dados da nuvem no IndexedDB
+//   clearLocalData()         — limpa IndexedDB após migração
 //   loadFromSupabase()       — carrega todos os dados do Supabase
 // ══════════════════════════════════════
 import { supabase, upsertRows, fetchRows } from './supabase'
 import { loadStorage, saveStorage } from './storage'
 
-// ── Mapeamento de chaves localStorage ──
+// ── Mapeamento de chaves IndexedDB ──
 const LOCAL_KEYS = {
   habits:         'nex_habits',
   history:        'nex_history',
@@ -65,7 +65,7 @@ export function getDataSummary() {
   }
 }
 
-// ── Migração localStorage → Supabase ──
+// ── Migração IndexedDB → Supabase ──
 
 export async function migrateLocalToSupabase(userId) {
   const errors = []
@@ -127,7 +127,7 @@ export async function migrateLocalToSupabase(userId) {
   return { success: errors.length === 0, errors }
 }
 
-// ── Aplicar dados remotos no localStorage ──
+// ── Aplicar dados remotos no IndexedDB ──
 
 export function applyRemoteData(data) {
   if (data.habits?.length)                                      saveStorage('nex_habits',           data.habits)
@@ -216,4 +216,172 @@ export async function deleteAllData(userId) {
   const cloudResult = await clearCloudData(userId)
   clearLocalData()
   return cloudResult
+}
+
+// ══════════════════════════════════════════════════════
+// DETECÇÃO DE CONFLITOS
+// ══════════════════════════════════════════════════════
+
+// ── Obtém o timestamp de dados locais ──
+function getLocalTimestamp(data) {
+  if (!data) return null
+  
+  // Se for um array, retorna o timestamp mais recente
+  if (Array.isArray(data)) {
+    if (data.length === 0) return null
+    const timestamps = data
+      .map(item => item.last_updated || item.updated_at || item.createdAt || null)
+      .filter(Boolean)
+    return timestamps.length > 0 ? Math.max(...timestamps) : null
+  }
+  
+  // Se for um objeto, retorna o timestamp mais recente
+  if (typeof data === 'object') {
+    const values = Object.values(data)
+    if (values.length === 0) return null
+    const timestamps = values
+      .map(val => val.last_updated || val.updated_at || val.createdAt || null)
+      .filter(Boolean)
+    return timestamps.length > 0 ? Math.max(...timestamps) : null
+  }
+  
+  return null
+}
+
+// ── Obtém o timestamp de dados remotos ──
+function getRemoteTimestamp(data) {
+  if (!data) return null
+  
+  // Se for um array, retorna o timestamp mais recente
+  if (Array.isArray(data)) {
+    if (data.length === 0) return null
+    const timestamps = data
+      .map(item => item.last_updated || item.updated_at || item.createdAt || null)
+      .filter(Boolean)
+    return timestamps.length > 0 ? Math.max(...timestamps) : null
+  }
+  
+  // Se for um objeto, retorna o timestamp mais recente
+  if (typeof data === 'object') {
+    const values = Object.values(data)
+    if (values.length === 0) return null
+    const timestamps = values
+      .map(val => val.last_updated || val.updated_at || val.createdAt || null)
+      .filter(Boolean)
+    return timestamps.length > 0 ? Math.max(...timestamps) : null
+  }
+  
+  return null
+}
+
+// ── Detecta conflitos entre dados locais e remotos ──
+export async function detectConflicts(localData, remoteData) {
+  const conflicts = []
+  
+  // Tipos de dados para verificar
+  const dataTypes = [
+    { type: 'habits', localKey: 'nex_habits', remoteKey: 'habits' },
+    { type: 'history', localKey: 'nex_history', remoteKey: 'history' },
+    { type: 'transactions', localKey: 'nex_fin_transactions', remoteKey: 'transactions' },
+    { type: 'journal', localKey: 'nex_journal', remoteKey: 'journal' },
+    { type: 'career_readings', localKey: 'nex_career_readings', remoteKey: 'career_readings' },
+    { type: 'life_projects', localKey: 'nex_projects', remoteKey: 'life_projects' },
+    { type: 'fin_goals', localKey: 'nex_fin_goals', remoteKey: 'financial_goals' },
+    { type: 'fin_config', localKey: 'nex_fin_config', remoteKey: 'fin_config' },
+    { type: 'fin_emergency', localKey: 'nex_fin_emergency', remoteKey: 'emergency' },
+  ]
+  
+  for (const { type, localKey, remoteKey } of dataTypes) {
+    const local = localData[localKey] !== undefined ? localData[localKey] : loadStorage(localKey, null)
+    const remote = remoteData[remoteKey]
+    
+    // Se não há dados em nenhum dos lados, não há conflito
+    if (!local && !remote) continue
+    
+    // Se há dados apenas em um lado, não há conflito (apenas dados novos)
+    if (!local || !remote) continue
+    
+    // Calcula timestamps
+    const localTimestamp = getLocalTimestamp(local)
+    const remoteTimestamp = getRemoteTimestamp(remote)
+    
+    // Se não há timestamps em nenhum lado, considera como conflito
+    if (!localTimestamp && !remoteTimestamp) {
+      conflicts.push({
+        type,
+        local,
+        remote,
+        localTimestamp: null,
+        remoteTimestamp: null,
+      })
+      continue
+    }
+    
+    // Se há timestamps diferentes, há um conflito
+    // Consideramos conflito se a diferença for menor que 1 minuto (pode ser edição simultânea)
+    const timeDiff = Math.abs(localTimestamp - remoteTimestamp)
+    if (timeDiff < 60000) { // 1 minuto em milissegundos
+      conflicts.push({
+        type,
+        local,
+        remote,
+        localTimestamp,
+        remoteTimestamp,
+      })
+    }
+  }
+  
+  return conflicts
+}
+
+// ── Aplica as resoluções escolhidas pelo usuário ──
+export function applyResolutions(resolutions, localData, remoteData) {
+  const result = { ...localData }
+  
+  for (const [type, resolution] of Object.entries(resolutions)) {
+    // Mapeia o tipo para as chaves corretas
+    const keyMap = {
+      habits: { local: 'nex_habits', remote: 'habits' },
+      history: { local: 'nex_history', remote: 'history' },
+      transactions: { local: 'nex_fin_transactions', remote: 'transactions' },
+      journal: { local: 'nex_journal', remote: 'journal' },
+      career_readings: { local: 'nex_career_readings', remote: 'career_readings' },
+      life_projects: { local: 'nex_projects', remote: 'life_projects' },
+      fin_goals: { local: 'nex_fin_goals', remote: 'financial_goals' },
+      fin_config: { local: 'nex_fin_config', remote: 'fin_config' },
+      fin_emergency: { local: 'nex_fin_emergency', remote: 'emergency' },
+    }
+    
+    const keys = keyMap[type]
+    if (!keys) continue
+    
+    if (resolution === 'local') {
+      // Mantém dados locais
+      result[keys.local] = localData[keys.local]
+    } else if (resolution === 'remote') {
+      // Mantém dados remotos
+      result[keys.remote] = remoteData[keys.remote]
+      // Atualiza localStorage com dados remotos
+      saveStorage(keys.local, remoteData[keys.remote])
+    }
+  }
+  
+  return result
+}
+
+// ── Carrega todos os dados locais ──
+export function loadAllLocalData() {
+  return {
+    'nex_habits': loadStorage('nex_habits', []),
+    'nex_history': loadStorage('nex_history', {}),
+    'nex_fin_transactions': loadStorage('nex_fin_transactions', []),
+    'nex_fin_goals': loadStorage('nex_fin_goals', []),
+    'nex_fin_config': loadStorage('nex_fin_config', null),
+    'nex_fin_emergency': loadStorage('nex_fin_emergency', null),
+    'nex_career_readings': loadStorage('nex_career_readings', []),
+    'nex_career_goals': loadStorage('nex_career_goals', []),
+    'nex_career_projects': loadStorage('nex_career_projects', []),
+    'nex_projects': loadStorage('nex_projects', []),
+    'nex_journal': loadStorage('nex_journal', []),
+  }
 }
