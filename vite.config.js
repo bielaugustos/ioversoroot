@@ -14,8 +14,7 @@ export default defineConfig({
     // O Safari bloqueia WebSocket para 'localhost' em algumas versões —
     // usar '127.0.0.1' resolve o problema.
     hmr: {
-      host: '127.0.0.1',
-      protocol: 'ws'
+      host: 'localhost',
     },
     // Garante que o servidor não tente outra porta se 5173 estiver ocupada,
     // evitando confusão entre porta do HTTP e do WebSocket.

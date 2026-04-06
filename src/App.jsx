@@ -11,7 +11,6 @@ import { SplashScreen }  from './components/SplashScreen'
 import { OfflineBanner } from './components/OfflineBanner'
 import { MigrationModal } from './components/MigrationModal'
 import { hasLocalData }   from './services/syncService'
-import { Desktop }       from './components/Desktop'
 import { useIsDesktop }  from './hooks/useIsDesktop'
 import Login          from './pages/Login'
 import ResetPassword  from './pages/ResetPassword'
@@ -23,7 +22,6 @@ import Mentor         from './pages/Mentor'
 import Profile        from './pages/Profile'
 import Career         from './pages/Career'
 import Projects       from './pages/Projects'
-import Calculator     from './pages/Calculator'
 import Rewards        from './pages/Rewards'
 import './styles/global.css'
 
@@ -54,20 +52,14 @@ function ProfileWrapper() {
 }
 
 function Layout() {
-  const isDesktop = useIsDesktop()
+  const isDesktop = useIsDesktop(768)
 
-  // Modo Desktop: usar Desktop component
-  if (isDesktop) {
-    return <Desktop />
-  }
-
-  // Modo Mobile: usar layout atual
   return (
     <div className="nex-app">
       <Toast />
-      <SideNav />
+      {isDesktop && <SideNav />}
       <div className="nex-content">
-        <Header />
+        {!isDesktop && <Header />}
         <OfflineBanner />
         <main>
           <Routes>
@@ -78,13 +70,12 @@ function Layout() {
             <Route path="/mentor"     element={<Mentor />} />
             <Route path="/career"    element={<Career />} />
             <Route path="/projects"  element={<Projects />} />
-            <Route path="/calculator" element={<Calculator />} />
             <Route path="/rewards"   element={<Rewards />} />
             <Route path="/profile"   element={<ProfileWrapper />} />
             <Route path="*"          element={<Navigate to="/" replace />} />
           </Routes>
         </main>
-        <BottomNav />
+        {!isDesktop && <BottomNav />}
       </div>
     </div>
   )

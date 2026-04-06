@@ -61,7 +61,7 @@
 .toggle {
   display: flex;
   border: 2px solid var(--border);
-  border-radius: 4px;
+  border-radius: 14px;
   overflow: hidden;
 }
 .toggleBtn {
@@ -78,7 +78,7 @@
 }
 .toggleActive {
   background: var(--ink);
-  color: var(--gold);
+  color: var(--white);
 }
 
 /* ── Formulário ── */

@@ -7,14 +7,15 @@ export const THEMES = {
     id: 'light', name: 'Padrão', emoji: '☀️',
     dark: false,
     vars: {
-      '--bg':      '#f5f0e8',
-      '--surface': '#ede8e0',
+      '--bg':      '#ffffff',
+      '--bg2':     '#f0f0f0',
+      '--surface': '#f5f5f5',
       '--white':   '#fff',
       '--ink':     '#111111',
       '--ink2':    '#333333',
       '--ink3':    '#555555',
-      '--border':  '#111111',
-      '--shadow':  '#111111',
+      '--border':  '#e0e0e0',
+      '--shadow':  '#cccccc',
     },
   },
   dark: {
@@ -22,6 +23,7 @@ export const THEMES = {
     dark: true,
     vars: {
       '--bg':      '#1a1a1a',
+      '--bg2':     '#333333',
       '--surface': '#252525',
       '--white':   '#2e2e2e',
       '--ink':     '#f0e8d0',
@@ -36,6 +38,7 @@ export const THEMES = {
     dark: true,
     vars: {
       '--bg':      '#0a0e1a',
+      '--bg2':     '#1a2332',
       '--surface': '#111827',
       '--white':   '#1e2a3a',
       '--ink':     '#e8f0fe',
@@ -50,6 +53,7 @@ export const THEMES = {
     dark: false,
     vars: {
       '--bg':      '#f0ece0',
+      '--bg2':     '#d8d4c0',
       '--surface': '#e4dfc8',
       '--white':   '#faf8f0',
       '--ink':     '#1a2a14',
@@ -64,6 +68,7 @@ export const THEMES = {
     dark: false,
     vars: {
       '--bg':      '#fff5f7',
+      '--bg2':     '#ffe0e8',
       '--surface': '#ffe8ed',
       '--white':   '#ffffff',
       '--ink':     '#3a1a22',
@@ -78,6 +83,7 @@ export const THEMES = {
     dark: false,
     vars: {
       '--bg':      '#f5ede0',
+      '--bg2':     '#e8dcc8',
       '--surface': '#ecdcc8',
       '--white':   '#fdf8f0',
       '--ink':     '#2a1a0a',
@@ -94,6 +100,7 @@ export const THEMES = {
     dark: true,
     vars: {
       '--bg':      '#282a36',
+      '--bg2':     '#3d4050',
       '--surface': '#343746',
       '--white':   '#3d4055',
       '--ink':     '#f8f8f2',
@@ -110,6 +117,7 @@ export const THEMES = {
     dark: true,
     vars: {
       '--bg':      '#2e3440',
+      '--bg2':     '#3b4252',
       '--surface': '#3b4252',
       '--white':   '#434c5e',
       '--ink':     '#eceff4',
@@ -127,6 +135,7 @@ export const THEMES = {
     attr: 'glass',  // data-theme personalizado para CSS overrides
     vars: {
       '--bg':      'transparent',
+      '--bg2':     'rgba(255,255,255,0.3)',
       '--surface': 'rgba(255,255,255,0.55)',
       '--white':   'rgba(255,255,255,0.85)',
       '--ink':     '#1c1c1e',
@@ -145,6 +154,7 @@ export const THEMES = {
     attr: 'glass_dark',
     vars: {
       '--bg':      'transparent',
+      '--bg2':     'rgba(20,20,20,0.3)',
       '--surface': 'rgba(30,30,30,0.55)',
       '--white':   'rgba(45,45,45,0.85)',
       '--ink':     '#f0f0f0',
@@ -162,6 +172,7 @@ export const THEMES = {
     dark: false,
     vars: {
       '--bg':      '#ffffff',
+      '--bg2':     '#ffffff',
       '--surface': '#ffffff',
       '--white':   '#ffffff',
       '--ink':     '#000000',
@@ -178,6 +189,7 @@ export const THEMES = {
     dark: false,
     vars: {
       '--bg':      '#c0c0c0',
+      '--bg2':     '#b0b0b0',
       '--surface': '#a0a0a0',
       '--white':   '#ffffff',
       '--ink':     '#000000',
@@ -194,6 +206,7 @@ export const THEMES = {
     dark: false,
     vars: {
       '--bg':      '#c0c0c0',
+      '--bg2':     '#c0c0c0',
       '--surface': '#dfdfdf',
       '--white':   '#ffffff',
       '--ink':     '#000000',
@@ -210,6 +223,7 @@ export const THEMES = {
     dark: true,
     vars: {
       '--bg':      '#1e1e1e',
+      '--bg2':     '#252525',
       '--surface': '#2d2d2d',
       '--white':   '#3d3d3d',
       '--ink':     '#00ff00',
@@ -228,7 +242,7 @@ export function applyTheme(themeId) {
 
   // Remove variáveis inline de temas anteriores
   // (para não acumular propriedades velhas)
-  const allVarNames = ['--bg','--surface','--white','--ink','--ink2','--ink3','--border','--shadow','--radius']
+  const allVarNames = ['--bg','--bg2','--surface','--white','--ink','--ink2','--ink3','--border','--shadow','--radius']
   allVarNames.forEach(v => root.style.removeProperty(v))
 
   // Injeta as variáveis do tema escolhido

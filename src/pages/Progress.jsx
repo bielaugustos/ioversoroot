@@ -17,6 +17,50 @@ import { toast }        from '../components/Toast'
 import { calcLevel }    from '../services/levels'
 import styles           from './Progress.module.css'
 
+
+// ══════════════════════════════════════
+// BLOCO — PONTOS & NÍVEL (para Estatísticas)
+// ══════════════════════════════════════
+function PontosCardStats() {
+  const { history }           = useApp()
+  const { streak }             = useStats(history)
+  const { allPoints }          = useHabits()
+  const level                  = calcLevel(allPoints)
+
+  return (
+    <div className="card">
+      <div className="card-title">
+        <level.Icon size={14} style={{ color: level.color }} /> {level.name}
+      </div>
+
+      <div className={styles.pontosMain}>
+        <div className={styles.pontosTotalWrap}>
+          <span className={styles.pontosTotalNum} style={{ color: level.color }}>{streak}</span>
+          <span className={styles.pontosTotalLabel}>dia{streak !== 1 ? 's' : ''} seguidos</span>
+        </div>
+        <span className={styles.pontosMantra}>{allPoints} io</span>
+      </div>
+
+      <p className={styles.pontosMantra}>{level.mantra}</p>
+
+      {level.next !== null && (
+        <div className={styles.pontosBarWrap}>
+          <div className={styles.pontosBar}>
+            <div className={styles.pontosBarFill} style={{ width: `${level.prog}%`, background: level.color }} />
+          </div>
+          <span className={styles.pontosBarLabel}>
+            {level.next - allPoints} io para {level.nextName}
+          </span>
+        </div>
+      )}
+      {level.next === null && (
+        <span className={styles.pontosBarLabel}>Nível máximo</span>
+      )}
+    </div>
+  )
+}
+
+
 // ─────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────
@@ -910,6 +954,8 @@ export default function Progress() {
       ══════════════════════════════════════ */}
       {mainTab === 'estatisticas' && (
         <>
+          <PontosCardStats />
+
           <StatsOverview
             history={history} streak={streak}
             daysActive={daysActive} allPoints={allPoints}

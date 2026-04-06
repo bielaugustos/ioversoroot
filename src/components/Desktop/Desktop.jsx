@@ -4,7 +4,7 @@ import { Taskbar } from './Taskbar'
 import { StartMenu } from './StartMenu'
 import { DesktopIcon } from './DesktopIcon'
 import { Widget } from './Widget'
-import { PiHouseBold, PiCheckCircleBold, PiCurrencyDollarBold, PiBriefcaseBold, PiRocketLaunchBold, PiRobotBold, PiChartLineUpBold, PiUserBold, PiCalculatorBold, PiGearBold, PiXBold, PiClockBold, PiChartBarBold } from 'react-icons/pi'
+import { PiHouseBold, PiCheckCircleBold, PiCurrencyDollarBold, PiBriefcaseBold, PiRocketLaunchBold, PiRobotBold, PiChartLineUpBold, PiUserBold, PiGearBold, PiXBold, PiClockBold, PiChartBarBold } from 'react-icons/pi'
 import { useUnlockableItem } from '../../hooks/useNav'
 import Home from '../../pages/Home'
 import Habits from '../../pages/Habits'
@@ -14,7 +14,6 @@ import Mentor from '../../pages/Mentor'
 import Profile from '../../pages/Profile'
 import Career from '../../pages/Career'
 import Projects from '../../pages/Projects'
-import Calculator from '../../pages/Calculator'
 import styles from './Desktop.module.css'
 
 // ══════════════════════════════════════
@@ -29,7 +28,6 @@ const PAGE_COMPONENTS = {
   Profile: Profile,
   Career: Career,
   Projects: Projects,
-  Calculator: Calculator,
 }
 
 // ══════════════════════════════════════
@@ -43,7 +41,6 @@ const APPS = [
   { id: 'projects', name: 'Projetos', icon: PiRocketLaunchBold, component: 'Projects' },
   { id: 'mentor', name: 'Mentor IA', icon: PiRobotBold, component: 'Mentor' },
   { id: 'progress', name: 'Progresso', icon: PiChartLineUpBold, component: 'Progress' },
-  { id: 'calculator', name: 'Calculadora', icon: PiCalculatorBold, component: 'Calculator' },
   { id: 'profile', name: 'Perfil', icon: PiUserBold, component: 'Profile' },
 ]
 

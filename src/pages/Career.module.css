@@ -1,11 +1,11 @@
 .page { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 
 /* Tabs de navegação interna */
-.navTabs { display: flex; border: 2.5px solid var(--border); border-radius: 4px; overflow: hidden; box-shadow: 3px 3px 0 var(--shadow); }
-.navTab  { flex: 1; padding: 9px 6px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: var(--font-body); color: var(--ink); background: var(--white); border: none; border-right: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; gap: 5px; transition: background .15s; }
-.navTab:last-child { border-right: none; }
-.navTab:hover:not(.navTabActive) { background: var(--surface); }
-.navTabActive { background: var(--ink); color: var(--gold); }
+.navTabs { display: flex; gap: 4px; padding: 4px; }
+.navTab  { flex: 1; padding: 8px 16px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: var(--font-body); color: var(--ink3); background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .15s; }
+.navTab:last-child { }
+.navTab:hover:not(.navTabActive) { }
+.navTabActive { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
 /* Resumo */
 .summaryGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }

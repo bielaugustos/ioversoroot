@@ -91,10 +91,10 @@
 .chExpiry  { font-size: 9px; color: var(--ink3); margin-top: 5px; display: block; }
 
 /* Conquistas */
-.tabs      { display: flex; gap: 5px; margin-bottom: 10px; }
-.tabBtn    { border: 2px solid var(--border); border-radius: 3px; padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: var(--font-body); background: var(--white); color: var(--ink); box-shadow: 1px 1px 0 var(--shadow); transition: all .1s; }
-.tabBtn:hover { transform: translate(-1px,-1px); box-shadow: 2px 2px 0 var(--shadow); }
-.tabActive { background: var(--ink); color: var(--gold); }
+.tabs      { display: flex; gap: 4px; padding: 4px; margin-bottom: 10px; }
+.tabBtn    { border: none; border-radius: 10px; padding: 8px 16px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: var(--font-body); background: var(--surface); color: var(--ink3); border: 0.5px solid var(--border); transition: all .1s; }
+.tabBtn:hover { }
+.tabActive { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .empty     { font-size: 12px; color: var(--ink3); padding: 12px 0; }
 
 .badgeList { display: flex; flex-direction: column; gap: 8px; }

@@ -259,6 +259,14 @@ export async function loadFromSupabase(userId) {
 export async function clearCloudData(userId) {
   const errors = []
 
+  if (!userId) {
+    return { success: false, errors: ['Usuário não identificado'] }
+  }
+
+  if (!supabase) {
+    return { success: false, errors: ['Supabase não configurado'] }
+  }
+
   const tables = [
     'habits', 'habit_history', 'transactions', 'financial_goals',
     'emergency_fund', 'career_readings', 'career_goals',
@@ -266,11 +274,19 @@ export async function clearCloudData(userId) {
   ]
 
   for (const table of tables) {
-    const { error } = await supabase
-      .from(table)
-      .delete()
-      .eq('user_id', userId)
-    if (error) errors.push(`${table}: ${error.message}`)
+    try {
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq('user_id', userId)
+      if (error) {
+        console.warn(`[syncService] Erro ao deletar ${table}:`, error.message)
+        errors.push(`${table}: ${error.message}`)
+      }
+    } catch (e) {
+      console.warn(`[syncService] Exceção ao deletar ${table}:`, e.message)
+      errors.push(`${table}: ${e.message}`)
+    }
   }
 
   return { success: errors.length === 0, errors }
@@ -279,8 +295,13 @@ export async function clearCloudData(userId) {
 // ── Apagar TUDO (local + nuvem) - LGPD ──
 
 export async function deleteAllData(userId) {
-  const cloudResult = await clearCloudData(userId)
   clearLocalData()
+  
+  if (!userId) {
+    return { success: true, errors: [], message: 'Dados locais apagados (sem usuário)' }
+  }
+  
+  const cloudResult = await clearCloudData(userId)
   return cloudResult
 }
 

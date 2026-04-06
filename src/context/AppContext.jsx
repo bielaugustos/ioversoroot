@@ -59,6 +59,7 @@ function migrateHabit(h) {
     priority: h.priority ?? 'media',
     freq: h.freq ?? 'diario',
     days: Array.isArray(h.days) ? h.days : [0,1,2,3,4,5,6],
+    archived: h.archived ?? false,
   }
 }
 
@@ -116,6 +117,16 @@ export function AppProvider({ children }) {
   const { isLoggedIn, user, profile, session } = useAuth()
   const userId = user?.id ?? null
 
+  // ── Sincroniza plano com o perfil Supabase quando o profile carrega
+  // IMPORTANTE: deve vir ANTES de qualquer uso do plan para evitar race condition
+  useEffect(() => {
+    if (profile?.plan) {
+      setPlanState(profile.plan)
+      saveStorage('nex_plan', profile.plan)
+      window.dispatchEvent(new Event('nex_plan_changed'))
+    }
+  }, [profile?.plan])
+
   // ── Efeitos de persistência e sincronização ──
 
   // Aplica o tema no <html> sempre que mudar
@@ -129,14 +140,6 @@ export function AppProvider({ children }) {
     saveStorage('nex_plan', plan)
     window.dispatchEvent(new Event('nex_plan_changed'))
   }, [plan])
-
-  // Sincroniza plano com o perfil Supabase quando o profile carrega
-  useEffect(() => {
-    if (profile?.plan) {
-      setPlanState(profile.plan)
-      saveStorage('nex_plan', profile.plan)
-    }
-  }, [profile?.plan])
 
   // Carrega hábitos e histórico do Supabase quando o usuário loga
   useEffect(() => {

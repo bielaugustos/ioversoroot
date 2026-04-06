@@ -108,7 +108,7 @@ export default function ResetPassword() {
       <div className={styles.page}>
         <div className={styles.card}>
           <div className={styles.brand}>
-            <img src="/icons/icon.svg" alt="Rootio" width={90} height={90} className={styles.brandLogo} />
+            <img src="/icons/icon-yellow.svg" alt="Rootio" width={90} height={90} />
             <div className={styles.brandText}>
               <span className={styles.brandName}>Rootio</span>
               <span className={styles.brandSub}>Sua evolução pessoal</span>
@@ -128,7 +128,7 @@ export default function ResetPassword() {
       <div className={styles.page}>
         <div className={styles.card}>
           <div className={styles.brand}>
-            <img src="/icons/icon.svg" alt="Rootio" width={90} height={90} className={styles.brandLogo} />
+            <img src="/icons/icon-yellow.svg" alt="Rootio" width={90} height={90} />
             <div className={styles.brandText}>
               <span className={styles.brandName}>Rootio</span>
               <span className={styles.brandSub}>Sua evolução pessoal</span>
@@ -152,7 +152,7 @@ export default function ResetPassword() {
       <div className={styles.page}>
         <div className={styles.card}>
           <div className={styles.brand}>
-            <img src="/icons/icon.svg" alt="Rootio" width={90} height={90} className={styles.brandLogo} />
+            <img src="/icons/icon-yellow.svg" alt="Rootio" width={90} height={90} />
             <div className={styles.brandText}>
               <span className={styles.brandName}>Rootio</span>
               <span className={styles.brandSub}>Sua evolução pessoal</span>

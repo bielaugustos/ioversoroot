@@ -1,59 +1,17 @@
 import { useEffect, useState, useMemo } from 'react'
 import {
   PiArrowRightBold, PiCheckBold, PiCalendarDots,
-  PiLightbulbBold, PiLockBold, PiChartLineUp,
+  PiLightbulbBold, PiLockBold,
   PiTrendUpBold, PiTrendDownBold, PiMinusBold,
-  PiCalendarBold, PiFlame, PiStarBold, PiSkipForwardBold,
+  PiCalendarBold, PiFlame, PiSkipForwardBold,
+  PiStarBold,
 } from 'react-icons/pi'
 import { useApp }      from '../context/AppContext'
-import { useHabits }   from '../hooks/useHabits'
 import { useStats }    from '../hooks/useStats'
 import { toast }       from '../components/Toast'
 import { useSound }    from '../hooks/useSound'
-import { calcLevel }   from '../services/levels'
 import { usePlan }    from '../hooks/usePlan'
 import styles from './Home.module.css'
-
-
-// ══════════════════════════════════════
-// BLOCO 0 — PONTOS & NÍVEL
-// ══════════════════════════════════════
-function PontosCard({ history }) {
-  const { streak }     = useStats(history)
-  const { allPoints }  = useHabits()
-  const level          = calcLevel(allPoints)
-
-  return (
-    <div className={`card ${styles.pontosCard}`}>
-      <div className="card-title">
-        <level.Icon size={14} style={{ color: level.color }} /> {level.name}
-      </div>
-
-      <div className={styles.pontosMain}>
-        <div className={styles.pontosTotalWrap}>
-          <span className={styles.pontosTotalNum} style={{ color: level.color }}>{streak}</span>
-          <span className={styles.pontosTotalLabel}>dia{streak !== 1 ? 's' : ''} seguidos</span>
-        </div>
-        <span className={styles.pontosMantra}>{allPoints} io</span>
-      </div>
-
-      <p className={styles.pontosMantra}>{level.mantra}</p>
-
-      <div className={styles.pontosBarWrap}>
-        <div className={styles.pontosBar}>
-          <div className={styles.pontosBarFill} style={{ width: `${level.prog}%`, background: level.color }} />
-        </div>
-        {level.next !== null ? (
-          <span className={styles.pontosBarLabel}>
-            {level.next - allPoints} io para {level.nextName}
-          </span>
-        ) : (
-          <span className={styles.pontosBarLabel}>Nível máximo</span>
-        )}
-      </div>
-    </div>
-  )
-}
 
 
 // ══════════════════════════════════════
@@ -70,7 +28,12 @@ function AcaoPrincipalCard({ habits, onToggle, onSkip }) {
   const PRI = { alta: 0, media: 1, baixa: 2 }
   const next = [...pending].sort((a, b) => (PRI[a.priority] ?? 1) - (PRI[b.priority] ?? 1))[0]
 
-  const priLabel = { alta: 'Alta prioridade', media: 'Média prioridade', baixa: 'Baixa prioridade' }
+  const priLabel = { alta: 'Alta', media: 'Média', baixa: 'Baixa' }
+
+  function freqText(days) {
+    if (!Array.isArray(days) || days.length === 7) return 'Diário'
+    return `${days.length}×/sem`
+  }
 
   function handleComecar() {
     if (!next || pressing) return
@@ -99,7 +62,10 @@ function AcaoPrincipalCard({ habits, onToggle, onSkip }) {
           <div className={styles.acaoHabit}>
             <span className={styles.heroTitle}>{next.name}</span>
             <div className={styles.heroSub}>
-              {priLabel[next.priority]} · {next.estMins ? `${next.estMins < 60 ? `${next.estMins} min` : `${Math.floor(next.estMins / 60)}h`}` : ''}
+              <span className={styles.priorityBadge + ' ' + (next.priority === 'alta' ? styles.priorityAlta : next.priority === 'media' ? styles.priorityMedia : styles.priorityBaixa)}>
+                {priLabel[next.priority]}
+              </span>
+              · {next.habitTime ? `${next.habitTime} · ` : ''}{freqText(next.days)}
             </div>
           </div>
           <button
@@ -118,47 +84,44 @@ function AcaoPrincipalCard({ habits, onToggle, onSkip }) {
 
 
 // ══════════════════════════════════════
-// BLOCO II — PROGRESSO
+// BLOCO II — SEMANA
 // ══════════════════════════════════════
-function ProgressoCard() {
-  const { completed, total, rate } = useHabits()
+function StatsCard() {
+  const { history } = useApp()
+  const [weekStartDay, setWeekStartDay] = useState(() => {
+    return parseInt(localStorage.getItem('nex_week_start') || '1', 10)
+  })
 
-  return (
-    <div className={`card ${styles.progressoCard}`}>
-      <div className="card-title">
-        <PiChartLineUp size={15} /> Hoje
-        <span className={styles.progressoPct}>{rate}%</span>
-      </div>
-      <div className={styles.progressoRow}>
-        <div className={styles.progressoPips}>
-          {Array.from({ length: Math.min(total, 10) }).map((_, i) => (
-            <div key={i} className={`${styles.pip} ${i < completed ? styles.pipDone : ''}`} />
-          ))}
-        </div>
-        <span className={styles.progressoCount}>{completed} / {total} hábitos</span>
-      </div>
-    </div>
-  )
-}
+  const toggleStartDay = () => {
+    const newDay = weekStartDay === 0 ? 1 : 0
+    setWeekStartDay(newDay)
+    localStorage.setItem('nex_week_start', String(newDay))
+  }
 
+  const weekNumber = () => {
+    const now = new Date()
+    const start = new Date(now.getFullYear(), 0, 1)
+    const diff = now - start
+    const oneWeek = 604800000
+    return Math.ceil((diff + start.getDay() * 86400000) / oneWeek)
+  }
 
-// ══════════════════════════════════════
-// BLOCO III — CALENDÁRIO
-// ══════════════════════════════════════
-function CalendarioCard({ history }) {
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
     const date = d.toISOString().slice(0, 10)
     const rec  = history[date]
-    const rate = rec?.total > 0 ? Math.round(rec.done / rec.total * 100) : 0
+    const r = rec?.total > 0 ? Math.round(rec.done / rec.total * 100) : 0
+    const dow = d.getDay()
+    const adjustedDow = (dow - weekStartDay + 7) % 7
     return {
       date,
-      rate,
+      rate: r,
       isToday: i === 6,
       label:   d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''),
+      dow: adjustedDow,
     }
-  })
+  }).sort((a, b) => a.dow - b.dow)
 
   function intensityClass(rate) {
     if (rate === 0)  return styles.calCell0
@@ -169,19 +132,25 @@ function CalendarioCard({ history }) {
   }
 
   return (
-    <div className={`card ${styles.calendarioCard}`}>
-      <div className="card-title">
-        <PiCalendarDots size={15} /> Semana
-      </div>
-      <div className={styles.calGrid}>
-        {last7.map(day => (
-          <div key={day.date} className={styles.calCol}>
-            <div className={`${styles.calCell} ${intensityClass(day.rate)} ${day.isToday ? styles.calCellToday : ''}`} />
-            <span className={`${styles.calLabel} ${day.isToday ? styles.calLabelToday : ''}`}>
-              {day.label}
-            </span>
-          </div>
-        ))}
+    <div className={`card ${styles.statsCard}`}>
+      <div className={styles.statsWeek}>
+        <div className={styles.statsWeekLabel}>
+          <PiCalendarDots size={13} />
+          <span>SEMANA {weekNumber()}</span>
+          <button type="button" className={styles.weekStartToggle} onClick={toggleStartDay}>
+            {weekStartDay === 0 ? 'Dom' : 'Seg'}
+          </button>
+        </div>
+        <div className={styles.calGrid}>
+          {last7.map(day => (
+            <div key={day.date} className={styles.calCol}>
+              <div className={`${styles.calCell} ${intensityClass(day.rate)} ${day.isToday ? styles.calCellToday : ''}`} />
+              <span className={`${styles.calLabel} ${day.isToday ? styles.calLabelToday : ''}`}>
+                {day.label}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -385,9 +354,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <AcaoPrincipalCard habits={habits} onToggle={handleToggle} />
-      <ProgressoCard />
-      <CalendarioCard history={history} />
-      <PontosCard history={history} />
+      <StatsCard />
       <InsightsCard history={history} habits={habits} />
     </div>
   )

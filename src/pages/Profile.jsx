@@ -16,7 +16,6 @@ import {
   PiTrashBold, PiEnvelopeBold,
   PiInstagramLogoFill, PiLinkedinLogoFill, PiYoutubeLogoFill, PiWhatsappLogoFill,
   PiUserCircleBold,
-  PiCalculatorBold,
 } from 'react-icons/pi'
 import { useAuth }     from '../context/AuthContext'
 import { useApp }      from '../context/AppContext'
@@ -66,7 +65,7 @@ function Toggle({ on, onToggle, label }) {
 function HeroCard({ allPoints, streak, daysActive }) {
   const level = calcLevel(allPoints)
   const { user, profile, reloadProfile } = useAuth()
-  const [userName,   setUserName]   = useState(() => loadStorage('nex_username', 'Usuário ../root'))
+  const [userName,   setUserName]   = useState(() => loadStorage('nex_username', 'UsuárIO ../root'))
   const [userAvatar, setUserAvatar] = useState(() => loadStorage('nex_avatar', '🧑'))
   const [editing,    setEditing]    = useState(false)
   const [tempName,   setTempName]   = useState(userName)
@@ -93,7 +92,7 @@ function HeroCard({ allPoints, streak, daysActive }) {
   }, [])
 
   async function handleSave() {
-    const name = tempName.trim() || 'Usuário Ioversoroot'
+    const name = tempName.trim() || 'Usuário ioversoroot'
     setUserName(name); saveStorage('nex_username', name)
     setEditing(false); setShowPicker(false)
     if (user?.id) {
@@ -158,30 +157,6 @@ function HeroCard({ allPoints, streak, daysActive }) {
         </div>
       </div>
 
-      <div className={styles.statsGrid}>
-        {[
-          { val: allPoints,    lbl: 'Pontos'      },
-          { val: `${streak}d`, lbl: 'Sequência'   },
-          { val: daysActive,   lbl: 'Dias ativos' },
-        ].map(({ val, lbl }) => (
-          <div key={lbl} className={styles.pstat}>
-            <div className={styles.pstatVal}>{val}</div>
-            <div className={styles.pstatLbl}>{lbl}</div>
-          </div>
-        ))}
-      </div>
-
-      {level.next && (
-        <div className={styles.xpSection}>
-          <div className={styles.xpLabel}>
-            <span>Próximo nível</span>
-            <span className={styles.xpVal}>{allPoints}/{level.next} io</span>
-          </div>
-          <div className="pbar-wrap" style={{ height: 10 }}>
-            <div className="pbar-fill" style={{ width:`${level.prog}%`, background:level.color, height:'100%' }} />
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -214,9 +189,9 @@ function RewardsShop({ allPoints, onItemBought, isOpen, onToggle, theme, setThem
     window.dispatchEvent(new Event('nex_shop_changed'))
     playPurchaseDirect()
     const msg = {
-      util_calendar:  'Calendário desbloqueado! Visível na tela de hábitos.',
+      util_calendar:  'CalendárIO desbloqueado! Visível na tela de hábitos.',
       util_freeze:    'Streak Freeze ativado!',
-      util_challenge: 'Desafio extra adicionado em Rewards.',
+      util_challenge: 'DesafIO extra adicionado em Rewards.',
       util_insight:   'Insight Financeiro ativado.',
     }
     toast(msg[item.id] || `"${item.name}" desbloqueado!`)
@@ -235,90 +210,58 @@ function RewardsShop({ allPoints, onItemBought, isOpen, onToggle, theme, setThem
     .slice().sort((a, b) => a.cost - b.cost)
 
   return (
-    <div className={styles.shopWrapper}>
-      {/* Trigger — aparece como linha de configuração */}
-      <div className={styles.shopTrigger} onClick={onToggle} role="button" tabIndex={0}
-        onKeyDown={e => e.key === 'Enter' && onToggle()}>
-        <span className={styles.settingIcon}><PiStorefrontBold size={16}/></span>
-        <div style={{ flex:1 }}>
-          <span className={styles.settingLabel}>Loja de recompensas</span>
-          <p className={styles.settingDesc}>
-            {ownedCount} / {SHOP_ITEMS.length} itens obtidos · {allPoints} io disponíveis
-          </p>
-        </div>
-        <span className={`${styles.shopArrow} ${isOpen ? styles.shopArrowOpen : ''}`}>
-          <PiCaretDownBold size={14}/>
-        </span>
-      </div>
-
-      {/* Conteúdo animado */}
-      <div className={`${styles.shopDrawer} ${isOpen ? styles.shopDrawerOpen : ''}`}>
-        <div className={styles.shopDrawerInner}>
-
-          {/* Categorias */}
-          <div className={styles.shopCats}>
-            {Object.entries(CAT_LABELS).map(([id, lbl]) => (
-              <button key={id} type="button"
-                className={`${styles.shopCat} ${cat===id ? styles.shopCatActive : ''}`}
-                onClick={() => setCat(id)} title={CAT_DESC[id]}>{lbl}
-              </button>
-            ))}
-          </div>
-
-          <p className={styles.shopCatDesc}>{CAT_DESC[cat]}</p>
-
-          {/* Lista de itens */}
-          <div className={styles.shopList}>
-            {list.map(item => {
-              const isOwned   = owned.has(item.id)
-              const canAfford = allPoints >= item.cost
-              return (
-                <div key={item.id} className={`${styles.shopRow} ${isOwned ? styles.shopRowOwned : ''} ${isOwned && item.toggle ? styles.shopRowToggleable : ''}`}>
-                  <span className={styles.shopRowEmoji}>{item.icon}</span>
-                  <div className={styles.shopRowInfo}>
-                    <span className={styles.shopRowName}>{item.name}</span>
-                    <span className={styles.shopRowDesc}>{item.desc}</span>
-                  </div>
-                  <div className={`${styles.shopRowAction} ${isOwned && item.toggle ? styles.shopRowActionToggle : ''}`}>
-                    {isOwned && item.toggle ? (
-                      <Toggle
-                        on={item.id === 'util_calendar' ? calVisible : true}
-                        onToggle={item.id === 'util_calendar' ? toggleCal : undefined}
-                        label={item.name}
-                      />
-                    ) : isOwned ? (
-                      <span className={styles.shopRowDone}>✓</span>
-                    ) : item.cost === 0 ? (
-                      <button type="button" className={`btn ${styles.shopRowBtn}`} onClick={() => buy(item)}>
-                        Grátis
-                      </button>
-                    ) : (
-                      <button type="button"
-                        className={`btn btn-primary ${styles.shopRowBtn} ${!canAfford ? styles.shopRowCant : ''}`}
-                        onClick={() => buy(item)} disabled={!canAfford}
-                        title={!canAfford ? `Faltam ${item.cost - allPoints} io` : ''}>
-                        {item.cost} io
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Theme Personalizer */}
-          <div style={{ padding:'11px 0', borderBottom:'1px solid var(--border)' }}>
-            <ThemePersonalizer currentTheme={theme} onThemeChange={setTheme} />
-          </div>
-
-        </div>
+    <div style={{ padding: '8px 0' }}>
+      {/* Lista de itens */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {list.map(item => {
+          const isOwned   = owned.has(item.id)
+          const canAfford = allPoints >= item.cost
+          return (
+            <div key={item.id} style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 12px',
+              background: isOwned ? 'var(--surface)' : 'var(--white)',
+              border: '0.5px solid var(--border)',
+              borderRadius: 6,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 16 }}>{item.icon}</span>
+                <span style={{ fontSize: 11, color: 'var(--ink)' }}>{item.desc}</span>
+              </div>
+              <div>
+                {isOwned && item.toggle ? (
+                  <Toggle
+                    on={item.id === 'util_calendar' ? calVisible : true}
+                    onToggle={item.id === 'util_calendar' ? toggleCal : undefined}
+                    label={item.name}
+                  />
+                ) : isOwned ? (
+                  <span style={{ fontSize: 11, color: '#27ae60', fontWeight: 700 }}>✓</span>
+                ) : item.cost === 0 ? (
+                  <button type="button" className="btn" style={{ fontSize: 10, padding: '4px 8px' }} onClick={() => buy(item)}>
+                    Grátis
+                  </button>
+                ) : (
+                  <button type="button"
+                    className="btn btn-primary"
+                    style={{ fontSize: 10, padding: '4px 8px' }}
+                    onClick={() => buy(item)} disabled={!canAfford}>
+                    {item.cost} IO
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
 
 // ══════════════════════════════════════
-// CHAVE API — configuração pelo usuário
+// CHAVE API — configuração pelo usuárIO
 // ══════════════════════════════════════
 function ApiKeyCard() {
   const [key,     setKey]     = useState(() => localStorage.getItem('nex_apikey') || '')
@@ -578,7 +521,7 @@ function AccountSettingsCard() {
       return
     }
 
-    // Validar idade - usuário deve ter pelo menos 13 anos (COPPA)
+    // Validar idade - usuárIO deve ter pelo menos 13 anos (COPPA)
     const today = new Date()
     const birth = new Date(birthdate)
     const age = today.getFullYear() - birth.getFullYear() -
@@ -613,285 +556,250 @@ function AccountSettingsCard() {
   }
 
   return (
-    <div className={styles.shopWrapper}>
-      <div className={styles.shopTrigger} onClick={() => setOpen(o => !o)} role="button" tabIndex={0}
-        onKeyDown={e => e.key === 'Enter' && setOpen(o => !o)}>
-        <span className={styles.settingIcon}><PiLockSimpleBold size={16}/></span>
-        <div style={{ flex:1 }}>
-          <span className={styles.settingLabel}>Configurações de conta</span>
-          <p className={styles.settingDesc}>
-            Alterar e-mail, senha e data de nascimento
-          </p>
-        </div>
-        <span className={`${styles.shopArrow} ${open ? styles.shopArrowOpen : ''}`}>
-          <PiCaretDownBold size={14}/>
-        </span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {/* E-mail atual */}
+      <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '12px 14px' }}>
+        <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--ink2)', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+          E-mail
+        </p>
+        <p style={{ fontSize: 13, color: 'var(--ink)', margin: 0, wordBreak: 'break-all' }}>
+          {currentEmail || 'Não conectado'}
+        </p>
       </div>
 
-      <div className={`${styles.shopDrawer} ${open ? styles.shopDrawerOpen : ''}`}>
-        <div className={styles.shopDrawerInner} style={{ display:'flex', flexDirection:'column', gap:16 }}>
+      {/* Trocar e-mail */}
+      {!showEmailForm ? (
+        <button
+          type="button"
+          className="btn"
+          style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', fontSize: 12, width: '100%' }}
+          onClick={() => setShowEmailForm(true)}>
+          <PiPencilSimpleBold size={14}/> Trocar e-mail
+        </button>
+      ) : (
+        <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 8, padding: 12 }}>
+          <form onSubmit={handleEmailChange} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink2)', display: 'block', marginBottom: 4 }}>
+                Novo e-mail
+              </label>
+              <input
+                className="input"
+                type="email"
+                placeholder="novo@email.com"
+                value={newEmail}
+                onChange={e => setNewEmail(e.target.value)}
+                autoComplete="email"
+                style={{ fontSize: 12 }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={emailLoading}
+                style={{ flex: 1, fontSize: 12 }}>
+                {emailLoading ? 'Salvando...' : 'Salvar'}
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => { setShowEmailForm(false); setNewEmail('') }}
+                style={{ fontSize: 12 }}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
-          {/* E-mail atual */}
-          <div style={{ background:'var(--surface)', border:'1.5px solid var(--border)', borderRadius:4, padding:'10px 12px' }}>
-            <p style={{ fontSize:10, fontWeight:700, color:'var(--ink2)', margin:'0 0 4px 0', textTransform:'uppercase', letterSpacing:'0.8px' }}>
-              E-mail atual
+      {/* Data de nascimento */}
+      <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '12px 14px' }}>
+        <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--ink2)', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+          Nascimento
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div>
+            <p style={{ fontSize: 13, color: 'var(--ink)', margin: 0 }}>
+              {formatBirthdate(currentBirthdate)}
             </p>
-            <p style={{ fontSize:13, color:'var(--ink)', margin:0, wordBreak:'break-all' }}>
-              {currentEmail}
-            </p>
+            {calculateAge(currentBirthdate) && (
+              <p style={{ fontSize: 11, color: 'var(--ink2)', margin: '2px 0 0 0' }}>
+                {calculateAge(currentBirthdate)} anos
+              </p>
+            )}
           </div>
-
-          {/* Trocar e-mail */}
-          {!showEmailForm ? (
+          {!showBirthdateForm ? (
             <button
               type="button"
               className="btn"
-              style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'center', fontSize:12 }}
-              onClick={() => setShowEmailForm(true)}>
-              <PiEnvelopeBold size={14}/> Trocar e-mail
+              style={{ padding: '6px 10px', fontSize: 11 }}
+              onClick={() => { setBirthdate(currentBirthdate || ''); setShowBirthdateForm(true) }}>
+              <PiPencilSimpleBold size={13}/>
             </button>
           ) : (
-            <form onSubmit={handleEmailChange} style={{ display:'flex', flexDirection:'column', gap:10 }}>
-              <div>
-                <label style={{ fontSize:11, fontWeight:700, color:'var(--ink2)', display:'block', marginBottom:4 }}>
-                  Novo e-mail
-                </label>
-                <input
-                  className="input"
-                  type="email"
-                  placeholder="novo@email.com"
-                  value={newEmail}
-                  onChange={e => setNewEmail(e.target.value)}
-                  autoComplete="email"
-                  style={{ fontSize:12 }}
-                />
-              </div>
-              <div style={{ display:'flex', gap:8 }}>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={emailLoading}
-                  style={{ flex:1, fontSize:12 }}>
-                  {emailLoading ? 'Atualizando...' : 'Salvar'}
-                </button>
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => { setShowEmailForm(false); setNewEmail('') }}
-                  style={{ fontSize:12 }}>
-                  Cancelar
-                </button>
-              </div>
-            </form>
+            <button
+              type="button"
+              className="btn"
+              style={{ padding: '6px 10px', fontSize: 11 }}
+              onClick={() => { setShowBirthdateForm(false); setBirthdate(currentBirthdate || '') }}>
+              Cancelar
+            </button>
           )}
-
-          {/* Data de nascimento */}
-          <div style={{ background:'var(--surface)', border:'1.5px solid var(--border)', borderRadius:4, padding:'10px 12px' }}>
-            <p style={{ fontSize:10, fontWeight:700, color:'var(--ink2)', margin:'0 0 4px 0', textTransform:'uppercase', letterSpacing:'0.8px' }}>
-              Data de nascimento
-            </p>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-              <div>
-                <p style={{ fontSize:13, color:'var(--ink)', margin:0 }}>
-                  {formatBirthdate(currentBirthdate)}
-                </p>
-                {calculateAge(currentBirthdate) && (
-                  <p style={{ fontSize:11, color:'var(--ink2)', margin:'2px 0 0 0' }}>
-                    {calculateAge(currentBirthdate)} anos
-                  </p>
-                )}
-              </div>
-              {!showBirthdateForm ? (
-                <button
-                  type="button"
-                  className="btn"
-                  style={{ padding:'6px 10px', fontSize:11 }}
-                  onClick={() => { setBirthdate(currentBirthdate || ''); setShowBirthdateForm(true) }}>
-                  <PiPencilSimpleBold size={13}/> Editar
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="btn"
-                  style={{ padding:'6px 10px', fontSize:11 }}
-                  onClick={() => { setShowBirthdateForm(false); setBirthdate(currentBirthdate || '') }}>
-                  Cancelar
-                </button>
-              )}
-            </div>
-          </div>
-
-          {showBirthdateForm && (
-            <form onSubmit={handleBirthdateChange} style={{ display:'flex', flexDirection:'column', gap:10 }}>
-              <div>
-                <label style={{ fontSize:11, fontWeight:700, color:'var(--ink2)', display:'block', marginBottom:4 }}>
-                  Nova data de nascimento
-                </label>
-                <input
-                  className="input"
-                  type="date"
-                  value={birthdate}
-                  onChange={e => setBirthdate(e.target.value)}
-                  autoComplete="bday"
-                  max={new Date().toISOString().split('T')[0]}
-                  style={{ fontSize:12 }}
-                />
-                <p style={{ fontSize:10, color:'var(--ink3)', margin:'4px 0 0 0', lineHeight:1.4 }}>
-                  Você deve ter pelo menos 13 anos para usar o app.
-                </p>
-              </div>
-              <div style={{ display:'flex', gap:8 }}>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={birthdateLoading}
-                  style={{ flex:1, fontSize:12 }}>
-                  {birthdateLoading ? 'Atualizando...' : 'Salvar'}
-                </button>
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => { setShowBirthdateForm(false); setBirthdate(currentBirthdate || '') }}
-                  style={{ fontSize:12 }}>
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Pontos (io) - apenas para usuários logados */}
-          {isLoggedIn && (
-            <div style={{ background:'var(--surface)', border:'1.5px solid var(--border)', borderRadius:4, padding:'10px 12px' }}>
-              <p style={{ fontSize:10, fontWeight:700, color:'var(--ink2)', margin:'0 0 4px 0', textTransform:'uppercase', letterSpacing:'0.8px' }}>
-                Pontos totais (io)
-              </p>
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-                <div>
-                  <p style={{ fontSize:13, color:'var(--ink)', margin:0 }}>
-                    {profile?.points ?? 0} io
-                  </p>
-                  <p style={{ fontSize:11, color:'var(--ink2)', margin:'2px 0 0 0' }}>
-                    Armazenados na nuvem
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Divider */}
-          <div style={{ height:1, background:'var(--border)', margin:'4px 0' }} />
-
-          {/* Trocar senha */}
-          {!showPasswordForm ? (
-            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-              <button
-                type="button"
-                className="btn"
-                style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'center', fontSize:12 }}
-                onClick={() => setShowPasswordForm(true)}>
-                <PiLockSimpleBold size={14}/> Trocar senha
-              </button>
-              <p style={{ fontSize:10, color:'var(--ink3)', margin:0, textAlign:'center', lineHeight:1.4 }}>
-                Você precisa digitar sua senha atual para trocá-la.
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handlePasswordChange} style={{ display:'flex', flexDirection:'column', gap:10 }}>
-              <div style={{ background:'#fffbf0', border:'1px solid var(--gold-dk)', borderRadius:4, padding:'8px 10px' }}>
-                <p style={{ fontSize:11, color:'var(--ink)', margin:0, lineHeight:1.5 }}>
-                  💡 <strong>Esqueceu sua senha?</strong> Saia da conta e use a opção "Esqueceu a senha?" na tela de login para redefinir sem precisar da senha atual.
-                </p>
-              </div>
-
-              <div>
-                <label style={{ fontSize:11, fontWeight:700, color:'var(--ink2)', display:'block', marginBottom:4 }}>
-                  Senha atual
-                </label>
-                <input
-                  className="input"
-                  type={showPasswords ? 'text' : 'password'}
-                  placeholder="Digite sua senha atual"
-                  value={currentPassword}
-                  onChange={e => setCurrentPassword(e.target.value)}
-                  autoComplete="current-password"
-                  style={{ fontSize:12 }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize:11, fontWeight:700, color:'var(--ink2)', display:'block', marginBottom:4 }}>
-                  Nova senha
-                </label>
-                <input
-                  className="input"
-                  type={showPasswords ? 'text' : 'password'}
-                  placeholder="Mínimo 6 caracteres"
-                  value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
-                  autoComplete="new-password"
-                  style={{ fontSize:12 }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize:11, fontWeight:700, color:'var(--ink2)', display:'block', marginBottom:4 }}>
-                  Confirmar nova senha
-                </label>
-                <input
-                  className="input"
-                  type={showPasswords ? 'text' : 'password'}
-                  placeholder="Repita a nova senha"
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  autoComplete="new-password"
-                  style={{ fontSize:12 }}
-                />
-              </div>
-              <button
-                type="button"
-                className="btn"
-                style={{ fontSize:11, color:'var(--ink2)', display:'flex', alignItems:'center', gap:6 }}
-                onClick={() => setShowPasswords(v => !v)}>
-                {showPasswords ? <PiEyeSlashBold size={12}/> : <PiEyeBold size={12}/>}
-                {showPasswords ? 'Ocultar senhas' : 'Mostrar senhas'}
-              </button>
-              <div style={{ display:'flex', gap:8 }}>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={passwordLoading}
-                  style={{ flex:1, fontSize:12 }}>
-                  {passwordLoading ? 'Atualizando...' : 'Salvar'}
-                </button>
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => { setShowPasswordForm(false); setCurrentPassword(''); setNewPassword(''); setConfirmPassword('') }}
-                  style={{ fontSize:12 }}>
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Termos e Privacidade */}
-          <div style={{ height:1, background:'var(--border)', margin:'4px 0' }} />
-          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-            <p style={{ fontSize:10, fontWeight:700, color:'var(--ink2)', margin:0, textTransform:'uppercase', letterSpacing:'0.8px' }}>
-              Legal
-            </p>
-            <div style={{ display:'flex', gap:8 }}>
-              <button type="button" className="btn" style={{ flex:1, fontSize:11, justifyContent:'center' }} onClick={legal.openTermos}>
-                Termos de Uso
-              </button>
-              <button type="button" className="btn" style={{ flex:1, fontSize:11, justifyContent:'center' }} onClick={legal.openPrivacidade}>
-                Privacidade
-              </button>
-              <button type="button" className="btn" style={{ flex:1, fontSize:11, justifyContent:'center' }} onClick={legal.openCookies}>
-                Cookies
-              </button>
-            </div>
-          </div>
-
         </div>
+      </div>
+
+      {showBirthdateForm && (
+        <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 8, padding: 12 }}>
+          <form onSubmit={handleBirthdateChange} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink2)', display: 'block', marginBottom: 4 }}>
+                Nova data
+              </label>
+              <input
+                className="input"
+                type="date"
+                value={birthdate}
+                onChange={e => setBirthdate(e.target.value)}
+                autoComplete="bday"
+                max={new Date().toISOString().split('T')[0]}
+                style={{ fontSize: 12 }}
+              />
+              <p style={{ fontSize: 10, color: 'var(--ink3)', margin: '4px 0 0 0', lineHeight: 1.4 }}>
+                Mínimo 13 anos
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={birthdateLoading}
+                style={{ flex: 1, fontSize: 12 }}>
+                {birthdateLoading ? 'Salvando...' : 'Salvar'}
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => { setShowBirthdateForm(false); setBirthdate(currentBirthdate || '') }}
+                style={{ fontSize: 12 }}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Pontos IO */}
+      {isLoggedIn && (
+        <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '12px 14px' }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--ink2)', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+            Pontos IO
+          </p>
+          <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--gold-dk)', margin: 0 }}>
+            {profile?.points ?? 0} IO
+          </p>
+        </div>
+      )}
+
+      {/* Trocar senha */}
+      {!showPasswordForm ? (
+        <button
+          type="button"
+          className="btn"
+          style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', fontSize: 12, width: '100%' }}
+          onClick={() => setShowPasswordForm(true)}>
+          <PiLockSimpleBold size={14}/> Trocar senha
+        </button>
+      ) : (
+        <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 8, padding: 12 }}>
+          <form onSubmit={handlePasswordChange} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ background: '#fffbf0', border: '1px solid var(--gold-dk)', borderRadius: 6, padding: '8px 10px' }}>
+              <p style={{ fontSize: 11, color: 'var(--ink)', margin: 0, lineHeight: 1.5 }}>
+                💡 Use "Esqueceu a senha?" no login para redefinir sem precisar da atual.
+              </p>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink2)', display: 'block', marginBottom: 4 }}>
+                Senha atual
+              </label>
+              <input
+                className="input"
+                type={showPasswords ? 'text' : 'password'}
+                placeholder="Digite sua senha atual"
+                value={currentPassword}
+                onChange={e => setCurrentPassword(e.target.value)}
+                autoComplete="current-password"
+                style={{ fontSize: 12 }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink2)', display: 'block', marginBottom: 4 }}>
+                Nova senha
+              </label>
+              <input
+                className="input"
+                type={showPasswords ? 'text' : 'password'}
+                placeholder="Mínimo 6 caracteres"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                autoComplete="new-password"
+                style={{ fontSize: 12 }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink2)', display: 'block', marginBottom: 4 }}>
+                Confirmar senha
+              </label>
+              <input
+                className="input"
+                type={showPasswords ? 'text' : 'password'}
+                placeholder="Repita a nova senha"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+                style={{ fontSize: 12 }}
+              />
+            </div>
+            <button
+              type="button"
+              className="btn"
+              style={{ fontSize: 11, color: 'var(--ink2)', display: 'flex', alignItems: 'center', gap: 6 }}
+              onClick={() => setShowPasswords(v => !v)}>
+              {showPasswords ? <PiEyeSlashBold size={12}/> : <PiEyeBold size={12}/>}
+              {showPasswords ? 'Ocultar' : 'Mostrar'}
+            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={passwordLoading}
+                style={{ flex: 1, fontSize: 12 }}>
+                {passwordLoading ? 'Salvando...' : 'Salvar'}
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => { setShowPasswordForm(false); setCurrentPassword(''); setNewPassword(''); setConfirmPassword('') }}
+                style={{ fontSize: 12 }}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Legal */}
+      <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+        <button type="button" className="btn" style={{ flex: 1, fontSize: 11, justifyContent: 'center', padding: '8px 4px' }} onClick={legal.openTermos}>
+          Termos
+        </button>
+        <button type="button" className="btn" style={{ flex: 1, fontSize: 11, justifyContent: 'center', padding: '8px 4px' }} onClick={legal.openPrivacidade}>
+          Privacidade
+        </button>
+        <button type="button" className="btn" style={{ flex: 1, fontSize: 11, justifyContent: 'center', padding: '8px 4px' }} onClick={legal.openCookies}>
+          Cookies
+        </button>
       </div>
     </div>
   )
@@ -949,93 +857,64 @@ function PlansCard() {
   const { isPro, cancelPro } = usePlan()
 
   return (
-    <div className={styles.shopWrapper}>
-      <div className={styles.shopTrigger} role="button" tabIndex={0}>
-        <span className={styles.settingIcon}><PiCrownBold size={16}/></span>
-        <div style={{ flex:1 }}>
-          <span className={styles.settingLabel}>Plano Pro</span>
-          <p className={styles.settingDesc}>
-            {isPro ? 'Plano ativo — obrigado pelo suporte!' : 'Desbloqueie recursos avançados'}
-          </p>
-        </div>
-      </div>
-
-      <div className={styles.shopDrawerOpen}>
-        <div className={styles.shopDrawerInner}>
-          {/* Grade de planos */}
-          <div className={styles.plansGrid}>
-            {/* Gratuito */}
-            <div className={styles.planCard}>
-              <div className={styles.planTop}>
-                <div className={isPro ? styles.planBadge : `${styles.planBadge} ${styles.planBadgeActive}`}>
-                  {!isPro && <PiCheckBold size={8}/>} {isPro ? 'GRATUITO' : 'ATUAL'}
-                </div>
-                <div className={styles.planName}>Gratuito</div>
-                <div>
-                  <span className={styles.planPrice}>R$ 0</span>
-                  <span className={styles.planPriceUnit}>/mês</span>
-                </div>
-              </div>
-              <div className={styles.planFeatures}>
-                {FREE_FEATURES.map(f => (
-                  <div key={f} className={styles.planFeature}>
-                    <PiCheckBold size={10} color="#27ae60" style={{ marginTop: 2, flexShrink: 0 }}/>
-                    <span className={styles.planFeatureText}>{f}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Pro */}
-            <div className={`${styles.planCard} ${styles.planCardPro}`}>
-              <div className={styles.planTop}>
-                <div className={isPro ? `${styles.planBadge} ${styles.planBadgeActive}` : `${styles.planBadge} ${styles.planBadgePro}`}>
-                  {isPro ? <><PiCheckBold size={8}/> ATUAL</> : <><PiCrownBold size={8}/> PRO</>}
-                </div>
-                <div className={`${styles.planName} ${styles.planNamePro}`}>
-                  <PiCrownBold size={13}/> Pro
-                </div>
-                <div>
-                  <span className={styles.planPrice} style={{ color: '#f39c12' }}>R$ 9,90</span>
-                  <span className={styles.planPriceUnit}>/mês</span>
-                </div>
-              </div>
-              <div className={styles.planFeatures}>
-                <div className={styles.planSectionLabel}>Tudo do Gratuito, mais:</div>
-                {PRO_EXTRAS.map(f => (
-                  <div key={f} className={styles.planFeature}>
-                    <PiCheckBold size={10} color="#f39c12" style={{ marginTop: 2, flexShrink: 0 }}/>
-                    <span className={styles.planFeatureHighlight}>{f}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* Grade de planos */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {/* Gratuito */}
+        <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)', borderRadius: 8, padding: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: isPro ? 'var(--ink3)' : '#27ae60', background: isPro ? 'var(--surface)' : '#e8f8ef', padding: '2px 6px', borderRadius: 4 }}>
+              {isPro ? 'GRATUITO' : 'ATUAL'}
+            </span>
           </div>
-
-          {/* CTA */}
-          {isPro ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div className={styles.planProActive}>
-                Plano Pro ativo — obrigado pelo suporte!
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', marginBottom: 8 }}>Gratuito</div>
+          <div style={{ fontSize: 11, color: 'var(--ink2)', marginBottom: 8 }}>R$ 0<span style={{ fontSize: 10 }}>/mês</span></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {FREE_FEATURES.map(f => (
+              <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: 'var(--ink2)' }}>
+                <PiCheckBold size={9} color="#27ae60"/>
+                <span>{f}</span>
               </div>
-              <button type="button" className="btn"
-                style={{ fontSize: 11, justifyContent: 'center', color: 'var(--ink3)' }}
-                onClick={cancelPro}>
-                Cancelar plano
-              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Pro */}
+        <div style={{ background: 'var(--white)', border: '0.5px solid var(--gold-dk)', borderRadius: 8, padding: 12, position: 'relative' }}>
+          <div style={{ position: 'absolute', top: -1, right: 8, background: 'var(--gold)', padding: '2px 6px', borderRadius: '0 0 4px 4px' }}>
+            <span style={{ fontSize: 8, fontWeight: 700, color: '#111' }}>PRO</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, marginTop: 8 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: isPro ? '#27ae60' : '#f39c12', background: isPro ? '#e8f8ef' : '#fef5e7', padding: '2px 6px', borderRadius: 4 }}>
+              {isPro ? 'ATUAL' : '推荐'}
+            </span>
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--gold-dk)', marginBottom: 8 }}>Pro</div>
+          <div style={{ fontSize: 11, color: 'var(--ink)', marginBottom: 8 }}>R$ 9,90<span style={{ fontSize: 10 }}>/mês</span></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12 }}>
+            {PRO_EXTRAS.map(f => (
+              <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: 'var(--ink2)' }}>
+                <PiCheckBold size={9} color="#f39c12"/>
+                <span>{f}</span>
+              </div>
+            ))}
+          </div>
+          {/* Botão Stripe dentro do card Pro */}
+          {isPro ? (
+            <div style={{ fontSize: 11, color: '#27ae60', textAlign: 'center', fontWeight: 700, padding: '8px 0', borderTop: '0.5px solid var(--border)' }}>
+              ✓ Plano Pro ativo
             </div>
           ) : (
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
               <stripe-buy-button
                 buy-button-id="buy_btn_1THf7tAh9kVNzJGC4tx1K4fy"
                 publishable-key="pk_live_51RIA2CAh9kVNzJGCuXxsjXs2oYkHoW9hKiXed7CMYuqxofzyZtSCBL4ya5J4ZLnkUbHWWOHY2qTgB19AH2bvrquQ00pXFWSvyl"
               />
+              <p style={{ fontSize: 9, color: 'var(--ink3)', margin: 0, textAlign: 'center' }}>
+                Pagamento seguro via Stripe
+              </p>
             </div>
           )}
-
-          <p className={styles.plansNote}>
-            Pagamento seguro via Stripe. Ativação instantânea do plano Pro.
-          </p>
         </div>
       </div>
     </div>
@@ -1046,13 +925,16 @@ function PlansCard() {
 // PROFILE — PÁGINA PRINCIPAL
 // ══════════════════════════════════════
 export default function Profile({ onNavigate }) {
-  const { habits, history, theme, setTheme, soundOn, setSoundOn, resetDay } = useApp()
+  const { habits, history, theme, setTheme, soundOn, setSoundOn, resetDay, setPlan } = useApp()
   const { allPoints } = useHabits()
   const { streak, daysActive } = useStats(history)
   const { can }                = usePlan()
 
   const { isLoggedIn, user, profile } = useAuth()
   const [shopOpen,          setShopOpen]          = useState(false)
+  const [accountOpen,       setAccountOpen]       = useState(false)
+  const [planOpen,          setPlanOpen]          = useState(false)
+  const [themeOpen,         setThemeOpen]         = useState(false)
   const [showLogoutModal,      setShowLogoutModal]      = useState(false)
   const [showGuestExitModal,   setShowGuestExitModal]   = useState(false)
   const [showMigrationModal,setShowMigrationModal] = useState(false)
@@ -1065,7 +947,7 @@ export default function Profile({ onNavigate }) {
   })
 
   function exportData() {
-    const userName   = loadStorage('nex_username', 'Usuário Ioversoroot')
+    const userName   = loadStorage('nex_username', 'Usuário ioversoroot')
     const userAvatar = loadStorage('nex_avatar', '🧑')
     const blob = new Blob(
       [JSON.stringify({ habits, history, userName, userAvatar }, null, 2)],
@@ -1109,210 +991,188 @@ export default function Profile({ onNavigate }) {
 
       <HeroCard allPoints={allPoints} streak={streak} daysActive={daysActive}/>
 
-      {/* Configurações — inclui aparência e loja inline */}
-      <div className="card">
-        <div className="card-title"><PiCodeBold size={15}/> Configurações</div>
-
-        {/* Aparência — tema como linha compacta */}
-        <div style={{ padding:'11px 0', borderBottom:'1px solid var(--border)' }}>
-          <ThemeSelector
-            currentTheme={theme}
-            onChangeTheme={setTheme}
-            ownedItems={ownedItems}
-          />
+      {/* Grupo 1: Conta + Plano Pro */}
+      <div className={styles.settingsGroup}>
+        <div className={styles.settingsGroupRow} onClick={() => setAccountOpen(a => !a)}>
+          <span className={styles.settingIcon}><PiLockSimpleBold size={16}/></span>
+          <div style={{ flex:1 }}>
+            <span className={styles.settingsGroupLabel}>Conta</span>
+            <p className={styles.settingsGroupDesc}>{isLoggedIn ? 'E-mail, senha e dados' : 'Entrar ou criar conta'}</p>
+          </div>
+          <span className={`${styles.settingsGroupValue} ${accountOpen ? styles.openArrow : ''}`}><PiCaretDownBold size={14}/></span>
         </div>
+        {accountOpen && (
+          <div className={styles.settingsGroupDropdown}>
+            <AccountSettingsCard/>
+          </div>
+        )}
+        <div className={styles.settingsGroupRow} onClick={() => setPlanOpen(p => !p)}>
+          <span className={styles.settingIcon}><PiCrownBold size={16}/></span>
+          <div style={{ flex:1 }}>
+            <span className={styles.settingsGroupLabel}>Plano Pro</span>
+            <p className={styles.settingsGroupDesc}>Recursos exclusivos e avançados</p>
+          </div>
+          <span className={`${styles.settingsGroupValue} ${planOpen ? styles.openArrow : ''}`}><PiCaretDownBold size={14}/></span>
+        </div>
+        {planOpen && (
+          <div className={styles.settingsGroupDropdown}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--ink2)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Plano Pro</div>
+            <PlansCard/>
+            <ApiKeyCard/>
+          </div>
+        )}
+      </div>
 
-        {/* Loja — dropdown animado dentro das configs */}
-        <RewardsShop
-          allPoints={allPoints}
-          isOpen={shopOpen}
-          onToggle={() => setShopOpen(s => !s)}
-          onItemBought={id => {
-            setOwnedItems(prev => new Set([...prev, id]))
-          }}
-          theme={theme}
-          setTheme={setTheme}
-        />
+      {/* Grupo 2: Tema */}
+      <div className={styles.settingsGroup}>
+        <div className={styles.settingsGroupRow} onClick={() => setThemeOpen(t => !t)}>
+          <span className={styles.settingIcon}><PiPaletteBold size={16}/></span>
+          <div style={{ flex:1 }}>
+            <span className={styles.settingsGroupLabel}>Tema</span>
+            <p className={styles.settingsGroupDesc}>Aparência do app</p>
+          </div>
+          <span className={`${styles.settingsGroupValue} ${themeOpen ? styles.openArrow : ''}`}><PiCaretDownBold size={14}/></span>
+        </div>
+        {themeOpen && (
+          <div className={styles.settingsGroupDropdown}>
+            <ThemeSelector
+              currentTheme={theme}
+              onChangeTheme={setTheme}
+              ownedItems={ownedItems}
+            />
+          </div>
+        )}
+      </div>
 
-        <div className={styles.settingRow}>
+      {/* Grupo 3: Sons */}
+      <div className={styles.settingsGroup}>
+        <div className={styles.settingsGroupRow}>
           <span className={styles.settingIcon}>
             {soundOn ? <PiSpeakerHighBold size={16}/> : <PiSpeakerSlashBold size={16}/>}
           </span>
-          <div style={{ flex:1 }}>
-            <span className={styles.settingLabel}>Sons de feedback</span>
+          <div style={{ flex: 1 }}>
+            <span className={styles.settingsGroupLabel}>Sons de feedback</span>
+            <p className={styles.settingsGroupDesc}>Ativar sons do app</p>
           </div>
           <Toggle on={soundOn} onToggle={() => setSoundOn(s => !s)} label="Sons"/>
         </div>
-
-        <div className={styles.settingRow}>
-          <span className={styles.settingIcon}><PiChartBarBold size={16}/></span>
-          <div style={{ flex:1 }}>
-            <span className={styles.settingLabel}>Experiência na navegação</span>
-            <p className={styles.settingDesc}>Exibe conquistas e estatísticas na barra inferior.</p>
-          </div>
-          <Toggle on={ownedItems.has('util_progress')} onToggle={() => toggleNavItem('util_progress')} label="Experiência nav"/>
-        </div>
-
-        <div className={styles.settingRow}>
-          <span className={styles.settingIcon}><PiSparkleBold size={16}/></span>
-          <div style={{ flex:1 }}>
-            <span className={styles.settingLabel}>Mentor na navegação</span>
-            <p className={styles.settingDesc}>Exibe o Mentor IA e Diário na barra inferior.</p>
-          </div>
-          <Toggle on={ownedItems.has('util_mentor')} onToggle={() => toggleNavItem('util_mentor')} label="Mentor nav"/>
-        </div>
-
-        <div className={styles.settingRow}>
-          <span className={styles.settingIcon}><PiCalculatorBold size={16}/></span>
-          <div style={{ flex:1 }}>
-            <span className={styles.settingLabel}>Calculadora na navegação</span>
-            <p className={styles.settingDesc}>Exibe a Calculadora na barra inferior.</p>
-          </div>
-          <Toggle on={ownedItems.has('util_calculator')} onToggle={() => toggleNavItem('util_calculator')} label="Calculator nav"/>
-        </div>
-
-        <div className={styles.settingRow}>
-          <span className={styles.settingIcon}><PiBriefcaseBold size={16}/></span>
-          <div style={{ flex:1 }}>
-            <span className={styles.settingLabel}>Carreira na navegação</span>
-            <p className={styles.settingDesc}>Exibe o ícone de Carreira na barra inferior.</p>
-          </div>
-          <Toggle on={ownedItems.has('util_career')} onToggle={() => toggleNavItem('util_career')} label="Career nav"/>
-        </div>
-
-        <div className={styles.settingRow}>
-          <span className={styles.settingIcon}><PiRocketLaunchBold size={16}/></span>
-          <div style={{ flex:1 }}>
-            <span className={styles.settingLabel}>Projetos na navegação</span>
-            <p className={styles.settingDesc}>Exibe o ícone de Projetos na barra inferior.</p>
-          </div>
-          <Toggle on={ownedItems.has('util_projects')} onToggle={() => toggleNavItem('util_projects')} label="Projects nav"/>
-        </div>
-
       </div>
 
-      {/* Dados — compacto com explicações */}
-      {(() => {
-        const canExport = can('export_json')
-        return (
-          <div className="card">
-            <div className="card-title">
-              <PiDownloadSimpleBold size={15}/> Seus Dados
-              {!canExport && (
-                <span style={{ marginLeft:'auto', fontSize:10, fontWeight:700, color:'var(--ink3)', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:4, padding:'2px 8px' }}>
-                  Plano Pro
-                </span>
+      {/* Grupo 4: Hub io */}
+      <div className={styles.settingsGroup}>
+        <div className={styles.settingsGroupRow} onClick={() => setShopOpen(s => !s)}>
+          <span className={styles.settingIcon}><PiStorefrontBold size={16}/></span>
+          <div style={{ flex:1 }}>
+            <span className={styles.settingsGroupLabel}>Hub io</span>
+            <p className={styles.settingsGroupDesc}>{ownedItems.size} / {SHOP_ITEMS.length} obtidos • {allPoints} IO</p>
+          </div>
+          <span className={`${styles.settingsGroupValue} ${shopOpen ? styles.openArrow : ''}`}><PiCaretDownBold size={14}/></span>
+        </div>
+        {shopOpen && (
+          <div className={styles.settingsGroupDropdown}>
+            <RewardsShop
+              allPoints={allPoints}
+              isOpen={true}
+              onToggle={() => setShopOpen(s => !s)}
+              onItemBought={id => setOwnedItems(prev => new Set([...prev, id]))}
+              theme={theme}
+              setTheme={setTheme}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Grupo 5: Backup */}
+      {can('export_json') && (
+        <div className={styles.settingsGroup}>
+          <div className={styles.settingsGroupRow} onClick={exportData}>
+            <span className={styles.settingIcon}><PiDownloadSimpleBold size={16}/></span>
+            <span className={styles.settingsGroupLabel}>Exportar backup</span>
+          </div>
+          <label className={styles.settingsGroupRow} style={{ cursor: 'pointer' }}>
+            <span className={styles.settingIcon}><PiUploadSimpleBold size={16}/></span>
+            <span className={styles.settingsGroupLabel}>Restaurar backup</span>
+            <input type="file" accept=".json" style={{ display: 'none' }} onChange={importData}/>
+          </label>
+          <div className={styles.settingsGroupRow} onClick={() => { if (window.confirm('Resetar todos os hábitos do dia?')) { resetDay(); toast('Dia resetado!') } }}>
+            <span className={styles.settingIcon}><PiArrowCounterClockwiseBold size={16}/></span>
+            <span className={styles.settingsGroupLabel}>Resetar dia</span>
+          </div>
+        </div>
+      )}
+
+      {/* Grupo 5: Navegação + Dados */}
+      <div className={styles.settingsGroup}>
+        <div className={styles.settingsGroupRow} onClick={() => toggleNavItem('util_progress')}>
+          <span className={styles.settingIcon}><PiChartBarBold size={16}/></span>
+          <span className={styles.settingsGroupLabel}>Experiência na navegação</span>
+          <Toggle on={ownedItems.has('util_progress')} onToggle={() => toggleNavItem('util_progress')} label="Experiência"/>
+        </div>
+        <div className={styles.settingsGroupRow} onClick={() => toggleNavItem('util_mentor')}>
+          <span className={styles.settingIcon}><PiSparkleBold size={16}/></span>
+          <span className={styles.settingsGroupLabel}>Mentor na navegação</span>
+          <Toggle on={ownedItems.has('util_mentor')} onToggle={() => toggleNavItem('util_mentor')} label="Mentor"/>
+        </div>
+        <div className={styles.settingsGroupRow} onClick={() => toggleNavItem('util_career')}>
+          <span className={styles.settingIcon}><PiBriefcaseBold size={16}/></span>
+          <span className={styles.settingsGroupLabel}>Carreira na navegação</span>
+          <Toggle on={ownedItems.has('util_career')} onToggle={() => toggleNavItem('util_career')} label="Carreira"/>
+        </div>
+        <div className={styles.settingsGroupRow} onClick={() => toggleNavItem('util_projects')}>
+          <span className={styles.settingIcon}><PiRocketLaunchBold size={16}/></span>
+          <span className={styles.settingsGroupLabel}>Projetos na navegação</span>
+          <Toggle on={ownedItems.has('util_projects')} onToggle={() => toggleNavItem('util_projects')} label="Projetos"/>
+        </div>
+        <div className={`${styles.settingsGroupRow} ${styles.settingsGroupRowDanger}`} onClick={() => setShowDeleteModal(true)}>
+          <span className={styles.settingIcon}><PiTrashBold size={16}/></span>
+          <span className={styles.settingsGroupLabel}>Apagar dados</span>
+        </div>
+        {hasLocalData() && (
+          <div className={styles.settingsGroupRow} onClick={() => can('data_migration') && setShowMigrationModal(true)}>
+            <span className={styles.settingIcon}><PiUploadSimpleBold size={16}/></span>
+            <div style={{ flex:1 }}>
+              <span className={styles.settingsGroupLabel}>Migrar dados locais</span>
+              {!can('data_migration') && (
+                <p className={styles.settingsGroupDesc}>Plano Pro necessárIO</p>
               )}
             </div>
-            {!canExport ? (
-              <div style={{ display:'flex', flexDirection:'column', gap:8, padding:'8px 0' }}>
-                <p style={{ fontSize:12, color:'var(--ink3)', margin:0, lineHeight:1.5 }}>
-                  Exportação e restauração de backup estão disponíveis no plano Pro.
-                </p>
-                <p style={{ fontSize:11, color:'var(--ink3)', margin:0 }}>
-                  O resetar dia está disponível para todos os planos.
-                </p>
-              </div>
-            ) : (
-              <>
-                <p className={styles.dadosDesc}>
-                  Exporte um backup completo (hábitos, histórico, perfil) em JSON ou restaure um backup anterior.
-                </p>
-                <div className={styles.dataRow}>
-                  <button className="btn" onClick={exportData} style={{ flex:1, justifyContent:'center', fontSize:12 }}>
-                    <PiDownloadSimpleBold size={13}/> Exportar backup
-                  </button>
-                  <label className={`btn ${styles.importLabel}`} style={{ fontSize:12 }}>
-                    <PiUploadSimpleBold size={13}/> Restaurar backup
-                    <input type="file" accept=".json" style={{ display:'none' }} onChange={importData}/>
-                  </label>
-                </div>
-              </>
-            )}
-            <button className="btn btn-danger"
-              style={{ width:'100%', justifyContent:'center', marginTop:6, fontSize:11 }}
-              onClick={() => { if (window.confirm('Resetar todos os hábitos do dia?')) { resetDay(); toast('Dia resetado!') } }}>
-              <PiArrowCounterClockwiseBold size={13}/> Resetar dia atual
-            </button>
+            {!can('data_migration') && <span className={styles.settingsGroupValue}>PRO</span>}
           </div>
-        )
-      })()}
-
-      {/* Plano + Chave API inline nas configs */}
-      <div className="card">
-        <div className="card-title"><PiCrownBold size={15}/> Plano &amp; IA</div>
-        <PlansCard/>
-        <ApiKeyCard/>
+        )}
       </div>
 
-      {/* Configurações de conta */}
-      <div className="card">
-        <div className="card-title"><PiLockSimpleBold size={15}/> Configurações de conta</div>
-        <AccountSettingsCard/>
-      </div>
- 
-      {/* Footer */}
-      <div className={styles.footer}>
-
-        {/* Marca */}
-        <img src="/icons/icon.svg" alt="Rootio" width={90} height={90} className={styles.brandLogo} />
-        <p className={styles.footerTagline}>Evolua com consistência, um dia de cada vez.</p>
-
-
-        {/* Redes sociais */}
-        <div className={styles.footerSocial}>
-          <a href="https://instagram.com/rootioverso" target="_blank" rel="noopener noreferrer" className={styles.footerSocialBtn} aria-label="Instagram">
-            <PiInstagramLogoFill size={18}/>
-          </a>
-          <a href="https://linkedin.com/company/rootioverso" target="_blank" rel="noopener noreferrer" className={styles.footerSocialBtn} aria-label="LinkedIn">
-            <PiLinkedinLogoFill size={18}/>
-          </a>
+      {/* Grupo 5: Sobre + Sair */}
+      <div className={styles.settingsGroup}>
+        <div className={styles.settingsGroupRow} onClick={() => {}}>
+          <span className={styles.settingIcon}><PiInfoBold size={16}/></span>
+          <div style={{ flex:1 }}>
+            <span className={styles.settingsGroupLabel}>Sobre</span>
+            <p className={styles.settingsGroupDesc}>v0.2.1 • © 2026 Rootio</p>
+          </div>
         </div>
-
-
-
-        <p className={styles.footerCopy}>© 2026 Rootio · Todos os direitos reservados</p>
-        <p className={styles.footerVersion}>v2.0.0</p>
+        <div className={styles.settingsGroupDropdown}>
+          <div style={{ padding: '8px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <p style={{ fontSize: 11, color: 'var(--ink2)', margin: 0, fontStyle: 'italic' }}>Evolua com consistência, um dia de cada vez.</p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <a href="https://instagram.com/rootIOverso" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink2)', textDecoration: 'none' }}>
+                <PiInstagramLogoFill size={18}/>
+              </a>
+              <a href="https://linkedin.com/company/rootIOverso" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink2)', textDecoration: 'none' }}>
+                <PiLinkedinLogoFill size={18}/>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div className={`${styles.settingsGroupRow} ${styles.settingsGroupRowDanger}`} onClick={() => isLoggedIn ? setShowLogoutModal(true) : setShowGuestExitModal(true)}>
+          <span className={styles.settingIcon}><PiUserCircleBold size={16}/></span>
+          <span className={styles.settingsGroupLabel}>Sair da conta</span>
+        </div>
       </div>
 
-      {/* Botão de migração - visível para todos, desabilitado para Free */}
-      {hasLocalData() && (
-        <button type="button"
-          className={`${styles.logoutBtn} ${styles.migrateDataBtn} ${!can('data_migration') ? styles.disabledBtn : ''}`}
-          disabled={!can('data_migration')}
-          onClick={() => can('data_migration') && setShowMigrationModal(true)}
-          title={can('data_migration') ? 'Migrar dados para a nuvem' : 'Disponível apenas no plano Pro'}>
-          <PiUploadSimpleBold size={14}/> Migrar dados locais
-          {!can('data_migration') && <span className={styles.proBadge}>PRO</span>}
-        </button>
-      )}
-
-      {/* Login / Logout */}
-      {isLoggedIn ? (
-        <>
-          <button type="button" className={styles.logoutBtn} onClick={() => setShowLogoutModal(true)}>
-            Sair da conta
-          </button>
-          <button type="button" className={`${styles.logoutBtn} ${styles.deleteDataBtn}`}
-            onClick={() => setShowDeleteModal(true)}>
-            <PiTrashBold size={14}/> Apagar meus dados
-          </button>
-        </>
-      ) : (
-        <>
-          <button type="button" className={`${styles.logoutBtn} ${styles.loginBtn}`}
-            onClick={() => {
-              localStorage.removeItem('ior_auth_skipped')
-              window.location.reload()
-            }}>
-            <PiUserCircleBold size={15}/> Entrar na conta
-          </button>
-          <button type="button" className={styles.logoutBtn}
-            onClick={() => setShowGuestExitModal(true)}>
-            Sair da conta
-          </button>
-        </>
-      )}
+      {/* Logo fora dos grupos */}
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
+        <img src="/icons/icon-yellow.svg" alt="Rootio" width={40} height={40} style={{ borderRadius: 8, opacity: 0.6 }} />
+      </div>
 
       {showMigrationModal && (
         <MigrationModal
@@ -1364,7 +1224,7 @@ export default function Profile({ onNavigate }) {
               style={{ justifyContent: 'center', fontSize: 13 }}
               onClick={() => {
                 setShowGuestExitModal(false)
-                localStorage.removeItem('ior_auth_skipped')
+                localStorage.removeItem('IOr_auth_skipped')
                 window.location.reload()
               }}>
               Manter dados localmente
@@ -1374,7 +1234,7 @@ export default function Profile({ onNavigate }) {
               onClick={() => {
                 setShowGuestExitModal(false)
                 clearLocalData()
-                localStorage.removeItem('ior_auth_skipped')
+                localStorage.removeItem('IOr_auth_skipped')
                 window.location.reload()
               }}>
               <PiTrashBold size={14}/> Apagar tudo e sair
@@ -1401,7 +1261,7 @@ export default function Profile({ onNavigate }) {
               Esta ação irá apagar <strong>todos os seus dados</strong> do dispositivo e da nuvem permanentemente. Esta ação não pode ser desfeita.
             </p>
             <p style={{ fontSize: 12, color: 'var(--ink3)', margin: 0, lineHeight: 1.5 }}>
-              Inclui: hábitos, transações, metas, projetos, diário e configurações.
+              Inclui: hábitos, transações, metas, projetos, diárIO e configurações.
             </p>
             <button type="button" className="btn btn-primary"
               style={{ justifyContent: 'center', fontSize: 13, background: '#e74c3c', borderColor: '#c0392b' }}

@@ -13,7 +13,6 @@ const PAGE_COMPONENTS = {
   Profile: () => import('../../pages/Profile'),
   Career: () => import('../../pages/Career'),
   Projects: () => import('../../pages/Projects'),
-  Calculator: () => import('../../pages/Calculator'),
 }
 
 // ══════════════════════════════════════

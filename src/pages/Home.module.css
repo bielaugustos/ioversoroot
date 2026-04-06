@@ -48,12 +48,148 @@
    HERO CARDS — cards escuros com fundo #111
    ══════════════════════════════════════ */
 .heroCard {
-  background: #111;
-  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(240, 192, 32, 0.25) 0%,
+    rgba(176, 128, 0, 0.18) 50%,
+    rgba(240, 192, 32, 0.25) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 0;
+  box-shadow: 
+    0 8px 32px rgba(176, 128, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(176, 128, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  animation: glassPulseGold 6s ease-in-out infinite;
+}
+
+@keyframes glassPulseGold {
+  0%, 100% {
+    background: linear-gradient(
+      135deg,
+      rgba(240, 192, 32, 0.22) 0%,
+      rgba(200, 160, 30, 0.15) 50%,
+      rgba(240, 192, 32, 0.22) 100%
+    );
+  }
+  50% {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 210, 50, 0.28) 0%,
+      rgba(200, 160, 30, 0.2) 50%,
+      rgba(255, 210, 50, 0.28) 100%
+    );
+  }
+}
+
+html[data-theme='light'] .heroCard,
+html[data-theme='glass'] .heroCard,
+html[data-theme='sakura'] .heroCard,
+html[data-theme='forest'] .heroCard,
+html[data-theme='desert'] .heroCard,
+html[data-theme='macintosh'] .heroCard,
+html[data-theme='windows98'] .heroCard,
+html[data-theme='high_contrast'] .heroCard {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(248, 244, 230, 0.78) 50%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  border: 1px solid rgba(176, 128, 0, 0.25);
+  box-shadow: 
+    0 8px 32px rgba(176, 128, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  animation: glassPulseGoldLight 6s ease-in-out infinite;
+}
+
+@keyframes glassPulseGoldLight {
+  0%, 100% {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.88) 0%,
+      rgba(250, 246, 235, 0.82) 50%,
+      rgba(255, 255, 255, 0.88) 100%
+    );
+  }
+  50% {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 252, 240, 0.9) 0%,
+      rgba(245, 240, 225, 0.85) 50%,
+      rgba(255, 252, 240, 0.9) 100%
+    );
+  }
+}
+
+html[data-theme='dark'] .heroCard,
+html[data-theme='midnight'] .heroCard,
+html[data-theme='dracula'] .heroCard,
+html[data-theme='nord'] .heroCard,
+html[data-theme='glass_dark'] .heroCard,
+html[data-theme='linux'] .heroCard {
+  background: linear-gradient(
+    135deg,
+    rgba(240, 192, 32, 0.15) 0%,
+    rgba(140, 100, 10, 0.1) 50%,
+    rgba(240, 192, 32, 0.15) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(240, 192, 32, 0.15);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(240, 192, 32, 0.1);
+  animation: glassPulseGoldDark 6s ease-in-out infinite;
+}
+
+@keyframes glassPulseGoldDark {
+  0%, 100% {
+    background: linear-gradient(
+      135deg,
+      rgba(220, 175, 25, 0.12) 0%,
+      rgba(130, 90, 8, 0.08) 50%,
+      rgba(220, 175, 25, 0.12) 100%
+    );
+  }
+  50% {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 210, 40, 0.18) 0%,
+      rgba(150, 110, 15, 0.12) 50%,
+      rgba(255, 210, 40, 0.18) 100%
+    );
+  }
+}
+
+.heroCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: heroShine 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes heroShine {
+  0% { left: -100%; }
+  30%, 70% { left: 100%; }
+  100% { left: 100%; }
 }
 
 .heroLabel {
@@ -62,21 +198,86 @@
   letter-spacing: 1.5px;
   text-transform: uppercase;
   margin-bottom: 10px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(0, 0, 0, 0.5);
 }
 
 .heroTitle {
   font-size: 22px;
   font-weight: 700;
-  color: #fff;
+  color: #000;
   line-height: 1.2;
   margin-bottom: 4px;
 }
 
 .heroSub {
   font-size: 12px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(0, 0, 0, 0.55);
   margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.priorityBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.priorityAlta {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
+  border: 1.5px solid rgba(231, 76, 60, 0.5);
+  color: #c0392b;
+}
+
+.priorityMedia {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(251, 191, 36, 0.2) 100%);
+  border: 1.5px solid rgba(245, 158, 11, 0.5);
+  color: #d68910;
+}
+
+.priorityBaixa {
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.25) 0%, rgba(46, 204, 113, 0.15) 100%);
+  border: 1.5px solid rgba(39, 174, 96, 0.4);
+  color: #1e8449;
+}
+
+html[data-theme='dark'] .priorityAlta,
+html[data-theme='midnight'] .priorityAlta,
+html[data-theme='dracula'] .priorityAlta,
+html[data-theme='nord'] .priorityAlta,
+html[data-theme='glass_dark'] .priorityAlta,
+html[data-theme='linux'] .priorityAlta {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.35) 0%, rgba(239, 68, 68, 0.25) 100%);
+  border: 1.5px solid rgba(231, 76, 60, 0.6);
+  color: #e74c3c;
+}
+
+html[data-theme='dark'] .priorityMedia,
+html[data-theme='midnight'] .priorityMedia,
+html[data-theme='dracula'] .priorityMedia,
+html[data-theme='nord'] .priorityMedia,
+html[data-theme='glass_dark'] .priorityMedia,
+html[data-theme='linux'] .priorityMedia {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.35) 0%, rgba(251, 191, 36, 0.25) 100%);
+  border: 1.5px solid rgba(245, 158, 11, 0.6);
+  color: #f39c12;
+}
+
+html[data-theme='dark'] .priorityBaixa,
+html[data-theme='midnight'] .priorityBaixa,
+html[data-theme='dracula'] .priorityBaixa,
+html[data-theme='nord'] .priorityBaixa,
+html[data-theme='glass_dark'] .priorityBaixa,
+html[data-theme='linux'] .priorityBaixa {
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.3) 0%, rgba(46, 204, 113, 0.2) 100%);
+  border: 1.5px solid rgba(39, 174, 96, 0.5);
+  color: #27ae60;
 }
 
 .heroCta {
@@ -94,6 +295,33 @@
 
 .heroCtaGold { background: #F0C020; color: #111; }
 .heroCtaGreen { background: #27ae60; color: #fff; }
+
+html[data-theme='dark'] .heroLabel,
+html[data-theme='midnight'] .heroLabel,
+html[data-theme='dracula'] .heroLabel,
+html[data-theme='nord'] .heroLabel,
+html[data-theme='glass_dark'] .heroLabel,
+html[data-theme='linux'] .heroLabel {
+  color: rgba(255,255,255,0.6);
+}
+
+html[data-theme='dark'] .heroTitle,
+html[data-theme='midnight'] .heroTitle,
+html[data-theme='dracula'] .heroTitle,
+html[data-theme='nord'] .heroTitle,
+html[data-theme='glass_dark'] .heroTitle,
+html[data-theme='linux'] .heroTitle {
+  color: #f5f5f5;
+}
+
+html[data-theme='dark'] .heroSub,
+html[data-theme='midnight'] .heroSub,
+html[data-theme='dracula'] .heroSub,
+html[data-theme='nord'] .heroSub,
+html[data-theme='glass_dark'] .heroSub,
+html[data-theme='linux'] .heroSub {
+  color: rgba(255,255,255,0.6);
+}
 
 .pontosLevelName {
   margin-left: auto;
@@ -343,68 +571,51 @@
 
 
 /* ══════════════════════════════════════
-   BLOCO II — PROGRESSO
+   BLOCO II — SEMANA
    ══════════════════════════════════════ */
-.progressoCard { display: flex; flex-direction: column; gap: 10px; }
-
-.progressoPct {
-  margin-left: auto;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--ink3);
+.statsCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.progressoRow {
+.statsWeekLabel {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 4px;
-}
-
-.progressoPips {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.pip {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  transition: background .2s;
-}
-.pipDone {
-  background: var(--ink);
-  border-color: var(--ink);
-}
-
-.progressoCount {
-  font-size: 12px;
+  gap: 6px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--ink2);
-  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
 }
 
-.progressoStreak {
-  font-size: 11px;
-  color: var(--ink3);
-  margin-top: 6px;
+.weekStartToggle {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all .15s;
 }
 
+.weekStartToggle:hover {
+  background: var(--gold);
+  color: #111;
+  border-color: var(--gold-dk);
+}
 
-/* ══════════════════════════════════════
-   BLOCO III — CALENDÁRIO
-   Compacto, não dominante.
-   ══════════════════════════════════════ */
+/* Calendário (mantido para semana) */
 .calendarioCard { padding-bottom: 14px; }
 
 .calGrid {
   display: flex;
-  gap: 6px;
-  justify-content: space-between;
-  margin-top: 10px;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
 }
 
 .calCol {
@@ -418,20 +629,94 @@
 .calCell {
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 3px;
-  max-width: 32px;
+  border-radius: 4px;
+  max-width: 38px;
+}
+
+.calLabel {
+  font-size: 9px;
+  color: var(--ink3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calLabelToday {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Intensidade do calendário (amarelo/gold) */
+.calCell0 { background: var(--surface); }
+.calCell1 { background: rgba(240, 192, 32, 0.25); }
+.calCell2 { background: rgba(240, 192, 32, 0.5); }
+.calCell3 { background: rgba(240, 192, 32, 0.75); }
+.calCell4 { background: var(--gold); }
+
+html[data-theme='dark'] .calCell1,
+html[data-theme='midnight'] .calCell1,
+html[data-theme='dracula'] .calCell1,
+html[data-theme='nord'] .calCell1,
+html[data-theme='glass_dark'] .calCell1,
+html[data-theme='linux'] .calCell1 { background: rgba(240, 192, 32, 0.3); }
+
+html[data-theme='dark'] .calCell2,
+html[data-theme='midnight'] .calCell2,
+html[data-theme='dracula'] .calCell2,
+html[data-theme='nord'] .calCell2,
+html[data-theme='glass_dark'] .calCell2,
+html[data-theme='linux'] .calCell2 { background: rgba(240, 192, 32, 0.5); }
+
+html[data-theme='dark'] .calCell3,
+html[data-theme='midnight'] .calCell3,
+html[data-theme='dracula'] .calCell3,
+html[data-theme='nord'] .calCell3,
+html[data-theme='glass_dark'] .calCell3,
+html[data-theme='linux'] .calCell3 { background: rgba(240, 192, 32, 0.7); }
+
+.calCellToday {
+  box-shadow: 0 0 0 2px var(--gold-dk);
+}
+
+/* .progressoStreak { */
+/*   font-size: 11px; */
+/*   color: var(--ink3); */
+/*   margin-top: 6px; */
+/* } */
+
+.calGrid {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: flex-end;
+  margin-top: 10px;
+}
+
+.calCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  flex: 1;
+}
+
+.calCell {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  max-width: 38px;
 }
 .calCell0 { background: var(--surface); }
-.calCell1 { background: #b7e4c7; }
-.calCell2 { background: #74c69d; }
-.calCell3 { background: #40916c; }
-.calCell4 { background: #1b4332; }
+.calCell1 { background: #fef3c7; }
+.calCell2 { background: #fde68a; }
+.calCell3 { background: #fbbf24; }
+.calCell4 { background: #d97706; }
 
 /* Modo escuro — intensidades adaptadas */
-[data-theme='dark'] .calCell1 { background: #1a3a2a; }
-[data-theme='dark'] .calCell2 { background: #1e5235; }
-[data-theme='dark'] .calCell3 { background: #27714a; }
-[data-theme='dark'] .calCell4 { background: #2d9e64; }
+[data-theme='dark'] .calCell1 { background: #3d3112; }
+[data-theme='dark'] .calCell2 { background: #52441d; }
+[data-theme='dark'] .calCell3 { background: #b8860b; }
+[data-theme='dark'] .calCell4 { background: #eab308; }
 
 .calCellToday { outline: 2px solid var(--border); outline-offset: 1px; }
 

@@ -114,13 +114,9 @@ export default function Login({ onSkip }) {
     <div className={styles.page}>
       <div className={styles.card}>
 
-        {/* Header da marca */}
-        <div className={styles.brand}>
-          <img src="/icons/icon.svg" alt="Rootio" width={90} height={90} className={styles.brandLogo} />
-          <div className={styles.brandText}>
-            <span className={styles.brandName} color='green'>Rootio</span>
-            <span className={styles.brandSub}>Sua evolução pessoal</span>
-          </div>
+        {/* Header da marca - apenas logo centralizado */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '20px 0' }}>
+          <img src="/icons/icon-yellow.svg" alt="Rootio" width={90} height={90} />
         </div>
 
         {/* Toggle login / cadastro (não mostra no modo reset) */}

@@ -11,8 +11,9 @@ import {
   PiCalendarBold, PiCheckCircleFill, PiListBold,
   PiNotePencilBold, PiClockBold, PiCalendarCheckBold,
   PiCheckBold, PiWarningBold,
-  PiEyeBold, PiEyeSlashBold, PiCaretDownBold, PiTagBold, PiQuestionBold,
+  PiEyeBold, PiEyeSlashBold, PiCaretDownBold, PiTagBold, PiQuestionBold, PiBriefcaseBold,
   PiMagnifyingGlassBold, PiArchiveBold, PiArrowCounterClockwiseBold,
+  PiCopyBold,
 } from 'react-icons/pi'
 import { loadStorage }   from '../services/storage'
 import { useApp }        from '../context/AppContext'
@@ -247,7 +248,17 @@ function QuickPanel({ habit, history, onEdit, onSave, onDelete }) {
         </button>
         <button type="button" className={styles.quickEditBtn} onClick={onEdit}
           aria-label="Editar configurações do hábito">
-          <PiPencilSimpleBold size={14} /> Editar hábito
+          <PiPencilSimpleBold size={14} /> Editar
+        </button>
+        <button type="button" className={[styles.quickLinkBtn, !habit.linkedProjectId && styles.quickLinkBtnEmpty].filter(Boolean).join(' ')}
+          onClick={() => {
+            const newProjId = prompt('Digite o ID do projeto para vincular (ou vazio para desvincular):', habit.linkedProjectId || '')
+            if (newProjId !== null) {
+              onSave({ ...habit, linkedProjectId: newProjId || null })
+            }
+          }}
+          aria-label="Vincular a um projeto">
+          <PiBriefcaseBold size={14} /> {habit.linkedProjectId ? 'Projeto' : 'Vincular'}
         </button>
         <button type="button" className={styles.quickDelBtn}
           onClick={() => { if (window.confirm(`Excluir "${habit.name}" permanentemente?`)) onDelete?.() }}
@@ -419,11 +430,23 @@ function SubtasksEditor({ subtasks, onChange }) {
 function SeedPtsCard({ earnedIo, pts, onPtsChange }) {
   const [tooltip,    setTooltip]    = useState(false)
   const [pressedPts, setPressedPts] = useState(null)
+  const [localPts, setLocalPts] = useState(pts ?? 0)
+  const [localPtsSaved, setLocalPtsSaved] = useState(!!pts)
   const level = calcLevel(earnedIo)
   const LevelIcon = level.Icon
 
+  const activePtsSaved = localPtsSaved
+  const activeSetPtsSaved = (val) => {
+    setLocalPtsSaved(val)
+    if (val && onPtsChange) {
+      onPtsChange(localPts)
+    }
+  }
+  const activePts = localPts
+
   function handlePtsClick(p) {
-    onPtsChange(p)
+    setLocalPts(p)
+    setLocalPtsSaved(false)
     setPressedPts(p)
     setTimeout(() => setPressedPts(null), 380)
   }
@@ -447,42 +470,48 @@ function SeedPtsCard({ earnedIo, pts, onPtsChange }) {
             )}
           </div>
         </div>
-      </div>
-
-      <div className={styles.ioDivider}/>
-
-      {/* ── Seletor io ── */}
-      <div className={styles.ioPtsSection}>
-        <div className={styles.ioPtsTop}>
-          <button type="button" className={styles.ioTooltipTrigger}
-            onClick={() => setTooltip(v => !v)}>
-            <span className={styles.ioPtsSectionLabel}>Pontos em desenvolvimento [io]</span>
-            <PiQuestionBold size={11} color={tooltip ? 'var(--ink)' : 'var(--ink3)'} />
+        <div className={styles.ioLevelHelp}>
+          <span className={styles.ioPtsSectionLabel}>Pontos IO</span>
+          <button type="button" className={`btn ${tooltip ? 'btn-primary' : ''}`}
+            style={{ padding: '4px 6px', flexShrink: 0, borderRadius: 4 }}
+            onClick={() => setTooltip(v => !v)}
+            title="O que são pontos IO?">
+            <PiQuestionBold size={12}/>
           </button>
         </div>
-
-        {tooltip && (
-          <p className={styles.ioWhisper}>
-            <strong>io</strong> são a moeda de evolução do Rootio. Cada vez que você conclui este hábito, ganha <strong>{pts} io</strong>. O total acumulado aparece em Stats e desbloqueia temas, o calendário, o Mentor IA e outras recompensas.
-          </p>
-        )}
-
-        <div className={styles.ptsRow} role="group" aria-label="Selecionar pontos io por conclusão">
-          {PTS_OPTS.map(p => (
-            <button key={p} type="button"
-              className={[
-                styles.ptsOpt,
-                pts === p && styles.ptsSel,
-                pressedPts === p && styles.ptsPress,
-              ].filter(Boolean).join(' ')}
-              onClick={() => handlePtsClick(p)}
-              aria-pressed={pts === p}
-              aria-label={`${p} io por conclusão`}>
-              {p}
-            </button>
-          ))}
-        </div>
       </div>
+
+      {tooltip && (
+        <div className={styles.ioWhisper}>
+          <p>Cada vez que você conclui este hábito, ganha <strong>{activePts} IO</strong>.</p>
+          <p style={{ marginTop: 4, opacity: 0.8 }}>Pontos IO podem ser usados no Hub IO e na Experiência.</p>
+        </div>
+      )}
+
+      <div className={styles.ptsGrid} role="group" aria-label="Selecionar pontos IO por conclusão">
+        {PTS_OPTS.map(p => (
+          <button key={p} type="button"
+            className={[
+              styles.ptsChip,
+              activePts === p && styles.ptsChipSel,
+            ].filter(Boolean).join(' ')}
+            onClick={() => handlePtsClick(p)}
+            aria-pressed={activePts === p}
+            aria-label={`${p} IO por conclusão`}>
+            {p}
+          </button>
+        ))}
+      </div>
+
+      {!activePtsSaved && (
+        <button
+          type="button"
+          className={`btn btn-primary`}
+          style={{ marginTop: 8, width: '100%', justifyContent: 'center' }}
+          onClick={() => activeSetPtsSaved(true)}>
+          <PiCheckBold size={12}/> Confirmar {activePts} IO
+        </button>
+      )}
 
     </div>
   )
@@ -496,14 +525,16 @@ function SeedPtsCard({ earnedIo, pts, onPtsChange }) {
 //   2. Detalhes   (subtarefas, notas, tempo, prazo)
 //   3. Frequência (dias da semana, repetição)
 // ══════════════════════════════════════
-function EditPanel({ habit, history, onSave, onDelete, onClose }) {
+function EditPanel({ habit, history, projects, onSave, onDelete, onClose }) {
   // ── Seção 1: Identidade ──
   const [name,     setName]     = useState(habit.name)
   const [priority, setPriority] = useState(habit.priority ?? 'media')
-  const [pts,      setPts]      = useState(habit.pts ?? 20)
+  const [pts,      setPts]      = useState(habit.pts ?? 0)
+  const [ptsSaved, setPtsSaved] = useState(!!habit.pts)
   const [icon,     setIcon]     = useState(habit.icon ?? 'PiStarBold')
   const [tags,     setTags]     = useState(Array.isArray(habit.tags) ? habit.tags : [])
   const [tagInput, setTagInput] = useState('')
+  const [linkedProjectId, setLinkedProjectId] = useState(habit.linkedProjectId ?? '')
 
   // ── Motivo ──
   const [reason,   setReason]   = useState(habit.reason ?? '')
@@ -562,15 +593,17 @@ function EditPanel({ habit, history, onSave, onDelete, onClose }) {
       setTab('simples')
       return
     }
+    const finalPts = pts
     playSaveDirect()
     onSave({
       ...habit,
-      name: name.trim(), priority, pts, icon,
+      name: name.trim(), priority, pts: finalPts, icon,
       subtasks, notes, reason, estMins, tags,
       deadline: deadline || null,
       period: period || null,
       habitTime: habitTime || null,
       freq, days,
+      linkedProjectId: linkedProjectId || null,
     })
   }
 
@@ -948,7 +981,7 @@ function EditPanel({ habit, history, onSave, onDelete, onClose }) {
 // Ao virar meia-noite, desaparece daqui e
 // surge normalmente no bloco do dia.
 // ══════════════════════════════════════
-function TomorrowCard({ habit, history, onSave, onDelete }) {
+function TomorrowCard({ habit, history, onSave, onDelete, projects }) {
   const [expanded, setExpanded] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const priColor = PRI_COLORS[habit.priority ?? 'media']
@@ -1001,6 +1034,7 @@ function TomorrowCard({ habit, history, onSave, onDelete }) {
         <div className={styles.editPanelInner}>
           <EditPanel
             habit={habit} history={history}
+            projects={projects}
             onSave={updated => { onSave(updated); setExpanded(false); setEditMode(false) }}
             onDelete={id => { onDelete(id); setExpanded(false); setEditMode(false) }}
             onClose={() => setEditMode(false)}
@@ -1019,7 +1053,7 @@ function TomorrowCard({ habit, history, onSave, onDelete }) {
 // — toque longo para seleção múltipla
 // — toque no card abre QuickPanel, botão editar abre EditPanel
 // ══════════════════════════════════════
-function HabitCard({ habit, history, onToggle, onSave, onDelete, selecting, selected, onSelect, onLongPress }) {
+function HabitCard({ habit, history, onToggle, onSave, onDelete, selecting, selected, onSelect, onLongPress, projects }) {
   const [expanded,   setExpanded]   = useState(false)
   const [editMode,   setEditMode]   = useState(false)
   const [ptsBounce,  setPtsBounce]  = useState(false)
@@ -1199,12 +1233,12 @@ function HabitCard({ habit, history, onToggle, onSave, onDelete, selecting, sele
               </span>
               {habit.done && (
                 <span className={`${styles.chip} ${styles['chip-green']}`}>
-                  concluído
+                  Concluído
                 </span>
               )}
               {!habit.done && dlStatus?.urgent && (
                 <span className={`${styles.chip} ${styles['chip-red']}`}>
-                  atrasado
+                  Atrasado
                 </span>
               )}
               {habit.done && (
@@ -1220,6 +1254,7 @@ function HabitCard({ habit, history, onToggle, onSave, onDelete, selecting, sele
             {streakDots.map((status, i) => (
               <div
                 key={i}
+                data-priority={habit.priority || 'media'}
                 className={[
                   styles.streakDot,
                   status === 'empty' && styles.streakDotEmpty
@@ -1248,6 +1283,7 @@ function HabitCard({ habit, history, onToggle, onSave, onDelete, selecting, sele
           <div className={styles.editPanelInner}>
             <EditPanel
               habit={habit} history={history}
+              projects={projects}
               onSave={updated => { onSave(updated); setExpanded(false); setEditMode(false) }}
               onDelete={id => { onDelete(id); setExpanded(false); setEditMode(false) }}
               onClose={() => setEditMode(false)}
@@ -1466,10 +1502,10 @@ function StepsProgress({ todayHabs }) {
         ))}
       </div>
       <div className={styles.stepsLegend}>
-        <span className={styles.stepsLegItem}><span className={`${styles.stepsLegDot} ${styles.stepDone}`}/>concluído</span>
-        <span className={styles.stepsLegItem}><span className={`${styles.stepsLegDot} ${styles.stepAlta}`}/>alta</span>
-        <span className={styles.stepsLegItem}><span className={`${styles.stepsLegDot} ${styles.stepMedia}`}/>média</span>
-        <span className={styles.stepsLegItem}><span className={`${styles.stepsLegDot} ${styles.stepBaixa}`}/>baixa</span>
+        <span className={styles.stepsLegItem}><span className={`${styles.stepsLegDot} ${styles.stepDone}`}/>Concluído</span>
+        <span className={styles.stepsLegItem}><span className={`${styles.stepsLegDot} ${styles.stepAlta}`}/>Alta</span>
+        <span className={styles.stepsLegItem}><span className={`${styles.stepsLegDot} ${styles.stepMedia}`}/>Média</span>
+        <span className={styles.stepsLegItem}><span className={`${styles.stepsLegDot} ${styles.stepBaixa}`}/>Baixa</span>
       </div>
     </div>
   )
@@ -1549,7 +1585,7 @@ function HabitLimitModal({ onUpgrade, onStayFree }) {
 }
 
 export default function Habits() {
-  const { habits, history, toggleHabit, saveHabit, addHabit, deleteHabit, soundOn } = useApp()
+  const { habits, history, toggleHabit, saveHabit, addHabit, deleteHabit, soundOn, projects } = useApp()
   const { allPoints } = useHabits()
   const { playCheck, playUncheck } = useSound(soundOn)
   const { can, isPro } = usePlan()
@@ -1576,6 +1612,72 @@ export default function Habits() {
   const [tomorrowOpen, setTomorrowOpen] = useState(true)
   const [archivedOpen, setArchivedOpen] = useState(false)
   const [search,       setSearch]       = useState('')
+  const [searchVisible, setSearchVisible] = useState(true)
+  const [pullHint, setPullHint] = useState(false)
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY
+    let ticking = false
+    let startY = 0
+    let isDragging = false
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      
+      if (currentScrollY > 50 && searchVisible) {
+        setSearchVisible(false)
+      } else if (currentScrollY <= 50 && !searchVisible) {
+        setSearchVisible(true)
+      }
+      
+      lastScrollY = currentScrollY
+      ticking = false
+    }
+
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(handleScroll)
+        ticking = true
+      }
+    }
+
+    const handleTouchStart = (e) => {
+      if (window.scrollY < 10) {
+        startY = e.touches[0].clientY
+        isDragging = true
+        setPullHint(true)
+      }
+    }
+
+    const handleTouchMove = (e) => {
+      if (!isDragging) return
+      const currentY = e.touches[0].clientY
+      const delta = currentY - startY
+      
+      if (delta > 30) {
+        setSearchVisible(true)
+        isDragging = false
+        setPullHint(false)
+      }
+    }
+
+    const handleTouchEnd = () => {
+      isDragging = false
+      setTimeout(() => setPullHint(false), 500)
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: true })
+    window.addEventListener('touchend', handleTouchEnd)
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [])
 
   const todayDow    = new Date().getDay()
   const tomorrowDow = (todayDow + 1) % 7
@@ -1654,7 +1756,7 @@ export default function Habits() {
       return
     }
     playSaveDirect()
-    addHabit({ name: n, done: false, pts: 20, icon: 'PiStarBold', priority: 'media',
+    addHabit({ name: n, done: false, pts: 0, icon: 'PiStarBold', priority: 'media',
       freq: 'diario', days: [0,1,2,3,4,5,6], subtasks: [], notes: '', estMins: null, deadline: null,
       createdAt: new Date().toISOString().slice(0, 10) })
     setNewName('')
@@ -1686,14 +1788,22 @@ export default function Habits() {
         setSelected(next)
       },
       onLongPress: () => { setSelecting(true); setSelected(new Set([hab.id])) },
+      projects,
     }
   }
 
   return (
     <main className={styles.page}>
 
+      {/* ── Pull hint ── */}
+      {pullHint && (
+        <div className={styles.pullHint}>
+          <PiMagnifyingGlassBold size={12} /> Puxe para baixo para buscar
+        </div>
+      )}
+
       {/* ── Busca ── */}
-      <div className={styles.searchBar}>
+      <div className={`${styles.searchBar} ${searchVisible ? '' : styles.hidden}`}>
         <PiMagnifyingGlassBold size={14} color="var(--ink3)" />
         <input
           className={styles.searchInput}
@@ -1717,6 +1827,17 @@ export default function Habits() {
         <div className={`card ${styles.selectBarCard}`}>
           <div className={styles.selectBar}>
             <span className={styles.selectCount}>{selected.size} selecionado{selected.size > 1 ? 's' : ''}</span>
+            <button type="button" className={styles.selectDupBtn}
+              onClick={() => {
+                const habitsToDup = habits.filter(h => selected.has(h.id))
+                habitsToDup.forEach(h => {
+                  addHabit({ ...h, id: undefined, name: `${h.name} (cópia)` })
+                })
+                toast(`${habitsToDup.length} hábito${habitsToDup.length > 1 ? 's' : ''} duplicado${habitsToDup.length > 1 ? 's' : ''}!`)
+                setSelected(new Set()); setSelecting(false)
+              }}>
+              <PiCopyBold size={13} /> Duplicar
+            </button>
             <button type="button" className={styles.selectDelBtn}
               onClick={() => {
                 if (!window.confirm(`Excluir ${selected.size} hábito${selected.size > 1 ? 's' : ''}?`)) return
@@ -1846,6 +1967,7 @@ export default function Habits() {
                 <TomorrowCard
                   key={hab.id} habit={hab} history={history}
                   onSave={saveHabit} onDelete={deleteHabit}
+                  projects={projects}
                 />
               ))}
             </div>

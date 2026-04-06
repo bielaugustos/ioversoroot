@@ -1018,8 +1018,8 @@ function EmergencyCard({ emergency, emergencyIdeal, avgMonthlyExpense, onSave })
       </div>
 
       {/* Barra de progresso */}
-      <div className="pbar-wrap" style={{ margin:'4px 0 2px' }}>
-        <div className="pbar-fill" style={{ width:`${pct}%`, background: colors[status], height:'100%' }}/>
+      <div className={styles.emergencyBarWrap}>
+        <div className={styles.emergencyBarFill} style={{ width: `${pct}%`, background: colors[status] }}/>
       </div>
       <div className={styles.emergencyProgress}>
         <span>{fmt(current)} guardado</span>

@@ -25,7 +25,6 @@
 
 .streakPill {
   background: var(--gold);
-  border: 2px solid var(--border);
   border-radius: 20px;
   padding: 2px 10px;
   font-size: 11px;
@@ -45,5 +44,7 @@
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* Oculta o Header quando a SideNav está visível (logo e streak ficam na sidebar) */
+/* Oculta o Header quando a SideNav está visível */
 @media (min-width: 768px) { .header { display: none; } }
+
+

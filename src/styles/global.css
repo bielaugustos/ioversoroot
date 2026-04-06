@@ -4,16 +4,16 @@
    TEMA CLARO
 ══════════════════════════════════════ */
 :root {
-  --bg:        #f5f0e8;
+  --bg:        #f9f7f3;
   --surface:   #ede8e0;
   --white:     #fff;
   --ink:       #111;
   --ink2:      #333;
   --ink3:      #555;
   --border:    #111;
-  --gold:      #f0c020;  /* amber original */
-  --gold-dk:   #b08000;  /* amber escuro original */
-  --gold-lt:   #fae080;  /* amber claro original */
+  --gold:      #F0C020;  /* dourado */
+  --gold-dk:   #b08000;  /* dourado escuro */
+  --gold-lt:   #ffe080;  /* dourado claro */
   --shadow:    #111;
   --font-body:    'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Space Grotesk', 'Inter', sans-serif;
@@ -33,8 +33,8 @@
   --ink3:    #a89c7c;
   --border:  #f0e8d0;
   --shadow:  #f0e8d044;
-  --gold-dk: #e0c060;  /* amber claro p/ dark mode */
-  --gold-lt:  #3a2800;  /* amber fundo dark */
+  --gold-dk: #e0c060;  /* dourado claro p/ dark mode */
+  --gold-lt: #a08000;  /* dourado escuro dark */
 }
 
 /* ══════════════════════════════════════
@@ -58,8 +58,8 @@ html[data-theme='glass'] .card {
   background: rgba(255,255,255,0.52);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255,255,255,0.62);
-  border-radius: 20px;
+  border: 0.5px solid rgba(255,255,255,0.62);
+  border-radius: 14px;
   box-shadow:
     0 8px 32px rgba(100,80,200,0.12),
     0 1px 0 rgba(255,255,255,0.90) inset;
@@ -73,8 +73,8 @@ html[data-theme='glass'] .btn {
   background: rgba(255,255,255,0.60);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.72);
-  border-radius: 12px;
+  border: 0.5px solid rgba(255,255,255,0.72);
+  border-radius: 14px;
   box-shadow: 0 4px 14px rgba(100,80,200,0.10), 0 1px 0 rgba(255,255,255,0.85) inset;
   color: #1c1c1e;
 }
@@ -120,8 +120,8 @@ html[data-theme='glass_dark'] .card {
   background: rgba(30,30,30,0.55);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 20px;
+  border: 0.5px solid rgba(255,255,255,0.15);
+  border-radius: 14px;
   box-shadow:
     0 8px 32px rgba(0,0,0,0.40),
     0 1px 0 rgba(255,255,255,0.10) inset;
@@ -135,8 +135,8 @@ html[data-theme='glass_dark'] .btn {
   background: rgba(45,45,45,0.65);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 12px;
+  border: 0.5px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
   box-shadow: 0 4px 14px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.10) inset;
   color: #f0f0f0;
 }
@@ -213,8 +213,8 @@ html[data-theme='glass_dark'] .card {
   background: rgba(30,30,30,0.52);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 20px;
+  border: 0.5px solid rgba(255,255,255,0.15);
+  border-radius: 14px;
   box-shadow:
     0 8px 32px rgba(0,0,0,0.40),
     0 1px 0 rgba(255,255,255,0.10) inset;
@@ -228,8 +228,8 @@ html[data-theme='glass_dark'] .btn {
   background: rgba(45,45,45,0.60);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 12px;
+  border: 0.5px solid rgba(255,255,255,0.15);
+  border-radius: 14px;
   box-shadow: 0 4px 14px rgba(0,0,0,0.30), 0 1px 0 rgba(255,255,255,0.10) inset;
   color: #f0f0f0;
 }
@@ -258,8 +258,8 @@ html[data-theme='glass'] .input {
   background: rgba(255,255,255,0.58);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255,255,255,0.68);
-  border-radius: 12px;
+  border: 0.5px solid rgba(255,255,255,0.68);
+  border-radius: 14px;
   box-shadow: 0 2px 10px rgba(100,80,200,0.08), 0 1px 0 rgba(255,255,255,0.85) inset;
 }
 
@@ -270,8 +270,8 @@ html[data-theme='glass'] .input:focus {
 
 html[data-theme='glass'] .hcheck {
   background: rgba(255,255,255,0.58);
-  border: 1.5px solid rgba(255,255,255,0.78);
-  border-radius: 8px;
+  border: 0.5px solid rgba(255,255,255,0.78);
+  border-radius: 14px;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 2px 8px rgba(100,80,200,0.08);
@@ -279,15 +279,15 @@ html[data-theme='glass'] .hcheck {
 
 html[data-theme='glass'] .pbar-wrap {
   background: rgba(255,255,255,0.45);
-  border: 1px solid rgba(255,255,255,0.60);
-  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.60);
+  border-radius: 14px;
 }
 
 html[data-theme='glass'] .toast {
   background: rgba(28,28,30,0.82);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.20);
+  border: 0.5px solid rgba(255,255,255,0.20);
   border-radius: 14px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.20);
 }
@@ -373,30 +373,24 @@ input, select, textarea {
 }
 
 /*
-  Em telas de 600–767px: centraliza com bordas laterais como moldura.
-  A partir de 768px o layout muda para sidebar lateral (flex-row).
+  Em telas de 600–767px: centraliza sem bordas.
 */
-@media (min-width: 600px) and (max-width: 767px) {
+@media (min-width: 600px) {
   .nex-app {
     max-width: 640px;
     margin: 0 auto;
-    border-left:  2px solid var(--border);
-    border-right: 2px solid var(--border);
   }
 }
 
-/* ══════════════════════════════════════
-   LAYOUT TABLET / DESKTOP (≥ 768px)
-   Sidebar lateral + coluna de conteúdo
-══════════════════════════════════════ */
+/* Tablet (≥768px): sidebar + sem bordas */
 @media (min-width: 768px) {
   .nex-app {
     flex-direction: row;
     max-width: 100%;
     margin: 0;
-    padding-bottom: 0;          /* sem BottomNav */
+    padding-bottom: 0;
     height: 100dvh;
-    height: 100vh;              /* fallback */
+    height: 100vh;
     overflow: hidden;
   }
 }
@@ -416,7 +410,6 @@ input, select, textarea {
     height: 100vh;
   }
 
-  /* main passa a ser a área rolável dentro da coluna */
   .nex-content > main {
     flex: 1;
     overflow-y: auto;
@@ -425,22 +418,13 @@ input, select, textarea {
   }
 }
 
-/* Em telas muito largas: limita a largura total e centraliza */
-@media (min-width: 1440px) {
-  .nex-app {
-    max-width: 1440px;
-    margin: 0 auto;
-    box-shadow: 0 0 0 1px var(--border);
-  }
-}
-
 /* ══════════════════════════════════════
    UTILITÁRIOS
 ══════════════════════════════════════ */
 .card {
   background: var(--surface);
-  border: 2.5px solid var(--border);
-  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
   padding: 12px 14px;
   box-shadow: 3px 3px 0 var(--shadow);
   transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, color 0.35s ease;
@@ -456,13 +440,12 @@ input, select, textarea {
   display: flex;
   align-items: center;
   gap: 7px;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 /* Botões base — fundo claro → texto escuro por padrão */
 .btn {
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
   padding: 8px 14px;
   font-size: 12px;
   font-weight: 700;
@@ -476,7 +459,6 @@ input, select, textarea {
   color: var(--ink);           /* PRETO no fundo claro ✓ */
   -webkit-appearance: none;
   appearance: none;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .btn:hover   { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--shadow); }
@@ -488,8 +470,8 @@ input, select, textarea {
   background: var(--gold);
   color: #111;
   border-color: var(--gold-dk);
+  border-radius: 14px;
   box-shadow: 2px 2px 0 var(--gold-dk);
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 .btn-primary:hover { box-shadow: 3px 3px 0 var(--gold-dk); }
 
@@ -503,8 +485,8 @@ input, select, textarea {
 
 /* Input */
 .input {
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
   padding: 8px 10px;
   font-size: 13px;
   background: var(--white);
@@ -514,17 +496,16 @@ input, select, textarea {
   width: 100%;
   -webkit-appearance: none;
   appearance: none;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .input:focus       { border-color: var(--gold-dk); box-shadow: 2px 2px 0 var(--gold-dk); }
-.input::placeholder { color: var(--ink3); text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8); }
+.input::placeholder { color: var(--ink3); }
 
 /* Barra de progresso */
 .pbar-wrap {
   background: var(--white);
-  border: 2px solid var(--border);
-  border-radius: 2px;
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
   height: 22px;
   overflow: hidden;
   transition: background 0.3s;
@@ -546,7 +527,6 @@ input, select, textarea {
   font-size: 11px;
   font-weight: 700;
   color: var(--ink);
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 /* Pontos de prioridade */
@@ -575,10 +555,9 @@ input, select, textarea {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
-.empty-state p { font-size: 13px; color: var(--ink3); text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8); }
+.empty-state p { font-size: 13px; color: var(--ink3); }
 
 /* ══════════════════════════════════════
    CHECKBOX ANIMADO
@@ -599,8 +578,8 @@ input, select, textarea {
   /* Dimensões e visual */
   width: 24px;
   height: 24px;
-  border: 2.5px solid var(--border);
-  border-radius: var(--radius);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
   background: var(--surface);
   display: flex;
   align-items: center;
@@ -656,8 +635,8 @@ input, select, textarea {
 }
 
 /* ══════════════════════════════════════
-   TOAST
-══════════════════════════════════════ */
+    TOAST
+ ══════════════════════════════════════ */
 .toast {
   position: fixed;
   bottom: 80px;
@@ -668,8 +647,8 @@ input, select, textarea {
   font-size: 12px;
   font-weight: 700;
   padding: 8px 18px;
-  border-radius: var(--radius);
-  border: 2px solid var(--gold-dk);
+  border-radius: 14px;
+  border: 0.5px solid var(--gold-dk);
   box-shadow: 3px 3px 0 var(--gold-dk);
   opacity: 0;
   transition: opacity 0.2s, transform 0.2s;

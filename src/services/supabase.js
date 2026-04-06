@@ -12,7 +12,7 @@ const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!SUPABASE_URL || !SUPABASE_ANON) {
-  console.warn('[Ioroot] Supabase não configurado — rodando em modo offline.')
+  console.warn('[Rootio] Supabase não configurado — rodando em modo offline.')
 }
 
 export const supabase = (SUPABASE_URL && SUPABASE_ANON)
@@ -34,6 +34,9 @@ export const supabase = (SUPABASE_URL && SUPABASE_ANON)
 // ── Auth helpers ───────────────────────────────────────
 
 export async function signUp({ email, password, username, birthdate }) {
+  if (!supabase) {
+    return { data: null, error: { message: 'Supabase não configurado' } }
+  }
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -61,6 +64,9 @@ export async function signUp({ email, password, username, birthdate }) {
 }
 
 export async function signIn({ email, password }) {
+  if (!supabase) {
+    return { data: null, error: { message: 'Supabase não configurado' } }
+  }
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -69,6 +75,9 @@ export async function signIn({ email, password }) {
 }
 
 export async function resetPassword(email) {
+  if (!supabase) {
+    return { data: null, error: { message: 'Supabase não configurado' } }
+  }
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${window.location.origin}/reset-password`,
   })
@@ -90,7 +99,9 @@ export async function signOut() {
   ]
   APP_KEYS.forEach(key => localStorage.removeItem(key))
 
-  await supabase.auth.signOut()
+  if (supabase) {
+    await supabase.auth.signOut()
+  }
 
   // Redireciona para a tela inicial e força reload completo
   // Isso garante que o React Router não mantenha o estado da rota anterior
@@ -99,11 +110,18 @@ export async function signOut() {
 }
 
 export async function getSession() {
+  if (!supabase) {
+    return null
+  }
   const { data: { session } } = await supabase.auth.getSession()
   return session
 }
 
 export function onAuthChange(callback) {
+  if (!supabase) {
+    // Supabase não configurado — retorna subscription vazia
+    return { data: { subscription: { unsubscribe: () => {} } } }
+  }
   return supabase.auth.onAuthStateChange((event, session) => {
     callback(event, session)
   })
@@ -112,6 +130,9 @@ export function onAuthChange(callback) {
 // ── Profile ────────────────────────────────────────────
 
 export async function getProfile(userId) {
+  if (!supabase) {
+    return { data: null, error: { message: 'Supabase não configurado' } }
+  }
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -121,6 +142,9 @@ export async function getProfile(userId) {
 }
 
 export async function updateProfile(userId, updates) {
+  if (!supabase) {
+    return { data: null, error: { message: 'Supabase não configurado' } }
+  }
   const { data, error } = await supabase
     .from('profiles')
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -131,6 +155,9 @@ export async function updateProfile(userId, updates) {
 }
 
 export async function updateEmail(newEmail) {
+  if (!supabase) {
+    return { data: null, error: { message: 'Supabase não configurado' } }
+  }
   const { data, error } = await supabase.auth.updateUser({
     email: newEmail
   })
@@ -138,6 +165,9 @@ export async function updateEmail(newEmail) {
 }
 
 export async function updatePassword(newPassword) {
+  if (!supabase) {
+    return { data: null, error: { message: 'Supabase não configurado' } }
+  }
   const { data, error } = await supabase.auth.updateUser({
     password: newPassword
   })
@@ -148,6 +178,9 @@ export async function updatePassword(newPassword) {
 
 // Garante que o perfil existe antes de atualizar
 async function ensureProfileExists(userId, email, username) {
+  if (!supabase) {
+    return false
+  }
   try {
     const { data: existing } = await supabase
       .from('profiles')
@@ -174,6 +207,9 @@ async function ensureProfileExists(userId, email, username) {
 }
 
 export async function updateProfilePoints(userId, points, email = '', username = '') {
+  if (!supabase) {
+    return { data: null, error: { message: 'Supabase não configurado' } }
+  }
   // Garante que o perfil existe antes de atualizar
   await ensureProfileExists(userId, email, username)
   
@@ -190,11 +226,17 @@ export async function updateProfilePoints(userId, points, email = '', username =
 // Usado pelo syncService para cada tabela
 
 export async function upsertRows(table, rows, options = {}) {
+  if (!supabase) {
+    return { error: { message: 'Supabase não configurado' } }
+  }
   const { error } = await supabase.from(table).upsert(rows, options)
   return { error }
 }
 
 export async function fetchRows(table, userId) {
+  if (!supabase) {
+    return { data: [], error: { message: 'Supabase não configurado' } }
+  }
   const { data, error } = await supabase
     .from(table)
     .select('*')
@@ -204,6 +246,9 @@ export async function fetchRows(table, userId) {
 }
 
 export async function deleteRow(table, id, userId) {
+  if (!supabase) {
+    return { error: { message: 'Supabase não configurado' } }
+  }
   const { error } = await supabase
     .from(table)
     .delete()

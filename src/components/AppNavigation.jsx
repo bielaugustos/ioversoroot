@@ -4,7 +4,6 @@ import {
   PiBriefcaseBold,
   PiRocketLaunchBold,
   PiRobotBold,
-  PiCalculatorBold,
   PiStorefrontBold,
 } from 'react-icons/pi'
 import styles from './AppNavigation.module.css'
@@ -46,17 +45,9 @@ export default function AppNavigation({ onNavigate }) {
       id: 'mentor',
       title: 'Mentor IA',
       icon: PiRobotBold,
-      color: '#F3E8FF',
-      textColor: '#7C3AED',
+      color: '#E8F5E9',
+      textColor: '#2d4a22',
       path: '/mentor'
-    },
-    {
-      id: 'calculator',
-      title: 'Calculadora',
-      icon: PiCalculatorBold,
-      color: '#F0FDF4',
-      textColor: '#16A34A',
-      path: '/calculator'
     }
   ]
   
