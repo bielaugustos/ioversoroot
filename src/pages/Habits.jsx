@@ -11,7 +11,7 @@ import {
   PiCalendarBold, PiCheckCircleFill, PiListBold,
   PiNotePencilBold, PiClockBold, PiCalendarCheckBold,
   PiCheckBold, PiWarningBold,
-  PiEyeBold, PiEyeSlashBold, PiCaretDownBold, PiTagBold, PiQuestionBold, PiBriefcaseBold,
+  PiEyeBold, PiEyeSlashBold, PiCaretDownBold, PiCaretUpBold, PiTagBold, PiQuestionBold, PiBriefcaseBold,
   PiMagnifyingGlassBold, PiArchiveBold, PiArrowCounterClockwiseBold,
   PiCopyBold,
 } from 'react-icons/pi'
@@ -230,41 +230,35 @@ function QuickPanel({ habit, history, onEdit, onSave, onDelete }) {
       )}
 
       {/* Pontuação inline */}
-      {ptsOpen && (
+      <div className={styles.quickBtnRow}>
         <SeedPtsCard
           earnedIo={stats.totalDone * (habit.pts ?? 0)}
           pts={habit.pts}
           onPtsChange={newPts => onSave({ ...habit, pts: newPts })}
         />
-      )}
+        <div className={styles.quickLinkBtn}>
+          <button type="button"
+            className={styles.quickLinkBtn}
+            aria-label="Vincular projeto"
+            onClick={() => {
+              const newProjId = prompt('Digite o ID do projeto para vincular (ou vazio para desvincular):', habit.linkedProjectId || '')
+              if (newProjId !== null) {
+                onSave({ ...habit, linkedProjectId: newProjId || null })
+              }
+            }}
+          >
+            <PiLinkBold size={14} /> {habit.linkedProjectId ? 'Projeto' : 'Vincular'}
+          </button>
+        </div>
 
-      <div className={styles.quickBtnRow}>
-        <button type="button"
-          className={[styles.ioChip, ptsOpen && styles.ioChipActive].filter(Boolean).join(' ')}
-          onClick={() => setPtsOpen(o => !o)}
-          aria-expanded={ptsOpen}
-          aria-label={ptsOpen ? 'Fechar painel de pontos' : 'Abrir painel de pontos'}>
-          <PiStarBold size={12} /> Pontos
-        </button>
-        <button type="button" className={styles.quickEditBtn} onClick={onEdit}
-          aria-label="Editar configurações do hábito">
-          <PiPencilSimpleBold size={14} /> Editar
-        </button>
-        <button type="button" className={[styles.quickLinkBtn, !habit.linkedProjectId && styles.quickLinkBtnEmpty].filter(Boolean).join(' ')}
-          onClick={() => {
-            const newProjId = prompt('Digite o ID do projeto para vincular (ou vazio para desvincular):', habit.linkedProjectId || '')
-            if (newProjId !== null) {
-              onSave({ ...habit, linkedProjectId: newProjId || null })
-            }
-          }}
-          aria-label="Vincular a um projeto">
-          <PiBriefcaseBold size={14} /> {habit.linkedProjectId ? 'Projeto' : 'Vincular'}
-        </button>
-        <button type="button" className={styles.quickDelBtn}
-          onClick={() => { if (window.confirm(`Excluir "${habit.name}" permanentemente?`)) onDelete?.() }}
-          aria-label={`Excluir hábito ${habit.name}`}>
-          <PiTrashBold size={15} />
-        </button>
+        <div className={styles.quickDelBtn}>
+          <button type="button"
+            aria-label={`Excluir hábito ${habit.name}`}
+            onClick={() => { if (window.confirm(`Excluir "${habit.name}" permanentemente?`)) onDelete?.() }}
+          >
+            <PiTrashBold size={15} />
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -961,11 +955,11 @@ function EditPanel({ habit, history, projects, onSave, onDelete, onClose }) {
 
       {/* Ações */}
       <div className={styles.panelActions}>
-        <button type="button" className={`btn btn-primary ${styles.actionBtn}`} onClick={handleSave}>
-          <PiFloppyDiskBold size={14} /> Salvar
-        </button>
         <button type="button" className={`btn ${styles.actionBtn} ${styles.archiveBtn}`} onClick={handleArchive}>
           <PiArchiveBold size={14} /> Arquivar
+        </button>
+        <button type="button" className={`btn btn-primary ${styles.actionBtn}`} onClick={handleSave}>
+          <PiFloppyDiskBold size={14} /> Salvar
         </button>
       </div>
 
@@ -1612,72 +1606,6 @@ export default function Habits() {
   const [tomorrowOpen, setTomorrowOpen] = useState(true)
   const [archivedOpen, setArchivedOpen] = useState(false)
   const [search,       setSearch]       = useState('')
-  const [searchVisible, setSearchVisible] = useState(true)
-  const [pullHint, setPullHint] = useState(false)
-
-  useEffect(() => {
-    let lastScrollY = window.scrollY
-    let ticking = false
-    let startY = 0
-    let isDragging = false
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      
-      if (currentScrollY > 50 && searchVisible) {
-        setSearchVisible(false)
-      } else if (currentScrollY <= 50 && !searchVisible) {
-        setSearchVisible(true)
-      }
-      
-      lastScrollY = currentScrollY
-      ticking = false
-    }
-
-    const onScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(handleScroll)
-        ticking = true
-      }
-    }
-
-    const handleTouchStart = (e) => {
-      if (window.scrollY < 10) {
-        startY = e.touches[0].clientY
-        isDragging = true
-        setPullHint(true)
-      }
-    }
-
-    const handleTouchMove = (e) => {
-      if (!isDragging) return
-      const currentY = e.touches[0].clientY
-      const delta = currentY - startY
-      
-      if (delta > 30) {
-        setSearchVisible(true)
-        isDragging = false
-        setPullHint(false)
-      }
-    }
-
-    const handleTouchEnd = () => {
-      isDragging = false
-      setTimeout(() => setPullHint(false), 500)
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('touchstart', handleTouchStart, { passive: true })
-    window.addEventListener('touchmove', handleTouchMove, { passive: true })
-    window.addEventListener('touchend', handleTouchEnd)
-
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('touchstart', handleTouchStart)
-      window.removeEventListener('touchmove', handleTouchMove)
-      window.removeEventListener('touchend', handleTouchEnd)
-    }
-  }, [])
 
   const todayDow    = new Date().getDay()
   const tomorrowDow = (todayDow + 1) % 7
@@ -1795,17 +1723,14 @@ export default function Habits() {
   return (
     <main className={styles.page}>
 
-      {/* ── Pull hint ── */}
-      {pullHint && (
-        <div className={styles.pullHint}>
-          <PiMagnifyingGlassBold size={12} /> Puxe para baixo para buscar
-        </div>
-      )}
+      {/* ── Steps progress ── */}
+      <StepsProgress todayHabs={todayHabs} />
 
       {/* ── Busca ── */}
-      <div className={`${styles.searchBar} ${searchVisible ? '' : styles.hidden}`}>
+      <div className={styles.searchField}>
         <PiMagnifyingGlassBold size={14} color="var(--ink3)" />
         <input
+          type="text"
           className={styles.searchInput}
           placeholder="Buscar hábito..."
           value={search}
@@ -1818,9 +1743,6 @@ export default function Habits() {
           </button>
         )}
       </div>
-
-      {/* ── Steps progress ── */}
-      <StepsProgress todayHabs={todayHabs} />
 
       {/* ── Modo seleção ── */}
       {selecting && selected.size > 0 && (
@@ -1886,6 +1808,12 @@ export default function Habits() {
             <span className={styles.emptyStateHint}>Use o campo abaixo para criar o primeiro.</span>
           </div>
         )}
+        {normal.length === 0 && priorities.length === 0 && doneCount > 0 && !search && (
+          <div className={`card ${styles.allDoneCard}`}>
+            <PiCheckCircleFill size={18} color="#27ae60" />
+            <span className={styles.allDoneText}>Dia completo — todos os hábitos concluídos!</span>
+          </div>
+        )}
         {atLimit && limitDecided ? (
           <div className={styles.addRow} style={{ opacity: 0.5, cursor: 'not-allowed', userSelect: 'none' }}>
             <PiCrownBold size={14} color="var(--gold-dk)" style={{ flexShrink: 0 }} />
@@ -1915,14 +1843,6 @@ export default function Habits() {
 
       {showLimitModal && (
         <HabitLimitModal onUpgrade={handleUpgrade} onStayFree={handleStayFree} />
-      )}
-
-      {/* Tudo concluído */}
-      {filteredPriorities.length === 0 && filteredNormal.length === 0 && doneCount > 0 && !search && (
-        <div className={`card ${styles.allDoneCard}`}>
-          <PiCheckCircleFill size={18} color="#27ae60" />
-          <span className={styles.allDoneText}>Dia completo — todos os hábitos concluídos!</span>
-        </div>
       )}
 
       {/* ── BLOCO 3: CONCLUÍDOS ── */}
@@ -1977,7 +1897,7 @@ export default function Habits() {
 
       {/* ── BLOCO: ARQUIVADOS ── */}
       {filteredArchived.length > 0 && (
-        <div className={`card ${styles.block}`}>
+        <div className={`card ${styles.block} ${styles.archivedBlock}`}>
           <button
             type="button"
             className={`${styles.blockHeader} ${styles.blockHeaderBtn}`}

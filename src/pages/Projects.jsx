@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePlan } from '../hooks/usePlan'
 import { PlanLimitModal } from '../components/PlanLimitModal'
@@ -8,7 +8,10 @@ import {
   PiCalendarBold, PiCalendarCheckBold, PiCaretDownBold, PiCaretUpBold,
   PiFlagBold, PiArrowUpBold, PiArrowRightBold, PiArrowDownBold,
   PiCircleDashedBold, PiSpinnerBold, PiCheckCircleBold, PiPauseBold,
-  PiLockSimpleBold, PiCrownBold, PiQuestionBold,
+  PiLockSimpleBold, PiCrownBold, PiQuestionBold, PiArrowLeftBold,
+  PiHeartBold, PiGlobeBold, PiPaintBrushBold, PiCurrencyDollarBold, PiBookOpenBold,
+  PiListBulletsBold, PiPlayBold, PiClockBold, PiCheckSquareBold,
+  PiPushPinBold, PiListDashesBold, PiSquaresFourBold, PiMagnifyingGlassBold,
 } from 'react-icons/pi'
 import { toast } from '../components/Toast'
 import { useAuth } from '../context/AuthContext'
@@ -57,6 +60,10 @@ const STATUS_OPTS = [
 ]
 
 const CATEGORIES = ['Pessoal', 'Saúde', 'Finanças', 'Aprendizado', 'Criativo', 'Social', 'Outro']
+
+const FREE_PROJECTS_LIMIT = 3
+const PROJ_FREE_ITEMS  = ['Até 3 projetos ativos', 'Marcos com progresso']
+const PROJ_PRO_ITEMS   = ['Projetos ilimitados', 'Marcos ilimitados', 'Suporte prioritário']
 
 // ── Helpers UI ──
 function PriorityDot({ priority, size = 10 }) {
@@ -135,10 +142,10 @@ function MilestoneList({ milestones, onChange }) {
 // ══════════════════════════════════════
 // FORM — NOVO PROJETO / META
 // ══════════════════════════════════════
-function ProjectForm({ onSave, onClose, initial }) {
+function ProjectForm({ onSave, onClose, initial, preselectedCategory }) {
   const [title,    setTitle]    = useState(initial?.title    || '')
   const [desc,     setDesc]     = useState(initial?.desc     || '')
-  const [category, setCategory] = useState(initial?.category || 'Pessoal')
+  const [category, setCategory]  = useState(initial?.category || preselectedCategory || 'Pessoal')
   const [priority, setPriority] = useState(initial?.priority || 'media')
   const [deadline, setDeadline] = useState(initial?.deadline || '')
   const [status,   setStatus]   = useState(initial?.status   || 'planejando')
@@ -181,21 +188,6 @@ function ProjectForm({ onSave, onClose, initial }) {
         ))}
       </div>
 
-      {/* Prioridade */}
-      <div className={styles.fieldRow}>
-        <span className={styles.fieldLbl}>Prioridade</span>
-        <div className={styles.chipRow}>
-          {PRIORITY_OPTS.map(p => (
-            <button key={p.id} type="button"
-              className={`${styles.chip} ${priority===p.id ? styles.chipSel : ''}`}
-              style={priority===p.id ? { borderColor:p.color, color:p.color } : {}}
-              onClick={() => setPriority(p.id)}>
-              <p.Icon size={11}/> {p.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Status */}
       <div className={styles.fieldRow}>
         <span className={styles.fieldLbl}>Status</span>
@@ -203,7 +195,7 @@ function ProjectForm({ onSave, onClose, initial }) {
           {STATUS_OPTS.map(s => (
             <button key={s.id} type="button"
               className={`${styles.chip} ${status===s.id ? styles.chipSel : ''}`}
-              style={status===s.id ? { borderColor:s.color, color:s.color } : {}}
+              style={status===s.id ? { background: s.color, borderColor: s.color, color: '#fff' } : { borderColor: s.color, color: s.color }}
               onClick={() => setStatus(s.id)}>
               <s.Icon size={11}/> {s.label}
             </button>
@@ -212,10 +204,17 @@ function ProjectForm({ onSave, onClose, initial }) {
       </div>
 
       {/* Prazo */}
-      <div className={styles.fieldRow}>
-        <PiCalendarBold size={13} color="var(--ink3)"/>
-        <input className="input" type="date" style={{ flex:1 }}
-          value={deadline} min={todayISO()} onChange={e => setDeadline(e.target.value)} />
+      <div className={styles.dateField}>
+        <div className={styles.dateIcon}>
+          <PiCalendarBold size={16} color="var(--ink3)"/>
+        </div>
+        <input 
+          className={styles.dateInput} 
+          type="date" 
+          value={deadline} 
+          min={todayISO()} 
+          onChange={e => setDeadline(e.target.value)} 
+        />
         {deadline && (
           <button type="button" className={styles.clearBtn} onClick={() => setDeadline('')}>
             <PiXBold size={11}/>
@@ -234,10 +233,34 @@ function ProjectForm({ onSave, onClose, initial }) {
 // ══════════════════════════════════════
 // PROJECT CARD — expansível
 // ══════════════════════════════════════
-function ProjectCard({ project, onUpdate, onDelete }) {
+function ProjectCard({ project, onUpdate, onDelete, swipedId, setSwipedId, touchStart, setTouchStart, togglePin }) {
   const [expanded, setExpanded] = useState(false)
   const [editing,  setEditing]  = useState(false)
   const [notes,    setNotes]    = useState(project.notes || '')
+
+  const cardSwiped = swipedId === project.id
+  
+  function handleTouchStart(e) {
+    setTouchStart(e.touches[0].clientX)
+  }
+  
+  function handleTouchEnd(e) {
+    if (!touchStart) return
+    const diff = e.changedTouches[0].clientX - touchStart
+    if (diff > 50) setSwipedId(project.id)
+    else if (diff < -50) setSwipedId(null)
+    setTouchStart(null)
+  }
+
+  function handleCardClick() {
+    if (cardSwiped) {
+      setSwipedId(null)
+    } else if (expanded) {
+      setExpanded(false)
+    } else {
+      setExpanded(true)
+    }
+  }
 
   const ms    = project.milestones || []
   const done  = ms.filter(m => m.done).length
@@ -273,23 +296,18 @@ function ProjectCard({ project, onUpdate, onDelete }) {
   }
 
   const isDone = project.status === 'concluido'
+  const statusColor = STATUS_OPTS.find(s => s.id === project.status)?.color || '#f0c020'
 
   return (
-    <div className={`${styles.card} ${isDone ? styles.cardDone : ''}`}>
-
-      {/* Barra de progresso no topo */}
-      {total > 0 && (
-        <div className={styles.progressBar}>
-          <div className={styles.progressFill}
-            style={{ width:`${pct}%`, background: isDone ? '#27ae60' : 'var(--gold)' }}/>
-        </div>
-      )}
+    <div 
+      className={`${styles.card} ${isDone ? styles.cardDone : ''}`}
+      style={{ '--status-color': statusColor }}
+    >
 
       {/* Header clicável */}
       <div className={styles.cardHeader} onClick={() => setExpanded(e => !e)}
         role="button" tabIndex={0} onKeyDown={e => e.key==='Enter' && setExpanded(p=>!p)}>
         <div className={styles.cardLeft}>
-          <PriorityDot priority={project.priority}/>
           <div className={styles.cardInfo}>
             <span className={styles.cardTitle}>{project.title}</span>
             <div className={styles.cardMeta}>
@@ -302,7 +320,7 @@ function ProjectCard({ project, onUpdate, onDelete }) {
             </div>
           </div>
         </div>
-        {expanded ? <PiCaretUpBold size={13} color="var(--ink3)"/> : <PiCaretDownBold size={13} color="var(--ink3)"/>}
+        <PiCaretDownBold size={13} color="var(--ink3)" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}/>
       </div>
 
       {/* Corpo expandido */}
@@ -314,17 +332,7 @@ function ProjectCard({ project, onUpdate, onDelete }) {
           <MilestoneList
             milestones={project.milestones}
             onChange={ms => {
-              // Detect which milestone changed for activity log
-              const prev = project.milestones || []
-              const changed = ms.find((m,i) => prev[i]?.done !== m.done)
-              const log = changed
-                ? [...(project.activityLog||[]), {
-                    id: Date.now(),
-                    text: `Marco "${changed.text}" ${changed.done ? '✓ concluído' : '↩ reaberto'}`,
-                    date: new Date().toISOString().slice(0,10)
-                  }].slice(-20)
-                : (project.activityLog||[])
-              onUpdate({ ...project, milestones: ms, activityLog: log })
+              onUpdate({ ...project, milestones: ms })
             }}
           />
 
@@ -341,8 +349,6 @@ function ProjectCard({ project, onUpdate, onDelete }) {
             )}
           </div>
 
-          <ActivityLog project={project}/>
-
           {/* Ações */}
           <div className={styles.cardActions}>
             <button type="button" className={`btn ${styles.actionBtn}`}
@@ -358,6 +364,14 @@ function ProjectCard({ project, onUpdate, onDelete }) {
               <PiTrashBold size={12}/>
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Barra de progresso na base */}
+      {total > 0 && (
+        <div className={styles.progressBar}>
+          <div className={styles.progressFill}
+            style={{ width: `${pct}%`, background: isDone ? '#27ae60' : 'var(--gold)' }}/>
         </div>
       )}
     </div>
@@ -418,29 +432,6 @@ function Summary({ projects }) {
 // ══════════════════════════════════════
 // PROJECTS — PÁGINA PRINCIPAL
 // ══════════════════════════════════════
-// ── Gráfico de atividade recente ──
-function ActivityLog({ project }) {
-  const log = [...(project.activityLog || [])].reverse().slice(0, 8)
-  if (!log.length) return null
-
-  return (
-    <div className={styles.actLog}>
-      <span className={styles.actLogTitle}>Atividade recente</span>
-      {log.map(entry => (
-        <div key={entry.id} className={styles.actLogRow}>
-          <span className={styles.actLogDot}/>
-          <span className={styles.actLogText}>{entry.text}</span>
-          <span className={styles.actLogDate}>{entry.date?.slice(5).replace('-','/')}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-
-const FREE_PROJECTS_LIMIT = 3
-const PROJ_FREE_ITEMS = [`Até ${FREE_PROJECTS_LIMIT} projetos ativos`, 'Marcos com progresso', 'Status e log de atividade']
-const PROJ_PRO_ITEMS  = ['Projetos ilimitados', 'Prazo, prioridade, categorias', 'Filtros e ordenação completos']
 
 export default function Projects() {
   const [projects,     setProjects]     = useState(() => load('nex_projects', []))
@@ -448,8 +439,7 @@ export default function Projects() {
   const userId = user?.id ?? null
 
   const [showForm,     setShowForm]     = useState(false)
-  const [filter,       setFilter]       = useState('todos')
-  const [sortBy,       setSortBy]       = useState('prioridade')
+  const [preselectedCategory, setPreselectedCategory] = useState(null)
   const [showModal,    setShowModal]    = useState(false)
   const [limitDecided, setLimitDecided] = useState(() => localStorage.getItem('nex_proj_limit_decided') === 'true')
   const [showHelp,     setShowHelp]     = useState(false)
@@ -487,12 +477,18 @@ export default function Projects() {
 
   function add(p) {
     if (atLimit) { setShowModal(true); return }
-    upd([p, ...projects]); setShowForm(false); toast(`"${p.title}" criado!`)
+    const newProject = { ...p, category: p.category || preselectedCategory || 'Pessoal' }
+    upd([newProject, ...projects]); setShowForm(false); setPreselectedCategory(null); toast(`"${p.title}" criado!`)
   }
 
-  function handleOpenForm() {
+  function handleOpenForm(category = null) {
     if (atLimit) { setShowModal(true); return }
-    setShowForm(s => !s)
+    if (category) {
+      setPreselectedCategory(category)
+    } else {
+      setPreselectedCategory(null)
+    }
+    setShowForm(true)
   }
 
   function handleUpgrade() { setShowModal(false); navigate('/profile') }
@@ -507,98 +503,182 @@ export default function Projects() {
     toast('Projeto removido.')
   }
 
-  const PRI_ORDER = { alta: 0, media: 1, baixa: 2 }
-
   const shown = useMemo(() => {
     let list = [...projects]
-
-    // Filtro por status
-    if (filter === 'ativos')     list = list.filter(p => p.status === 'andamento')
-    if (filter === 'planejando') list = list.filter(p => p.status === 'planejando')
-    if (filter === 'concluidos') list = list.filter(p => p.status === 'concluido')
-    if (filter === 'vencidos')   list = list.filter(p => {
-      if (!p.deadline || p.status === 'concluido') return false
-      return new Date(p.deadline + 'T00:00:00') < new Date()
-    })
-
-    // Ordenação
-    if (sortBy === 'prioridade') list.sort((a,b) => (PRI_ORDER[a.priority]||1) - (PRI_ORDER[b.priority]||1))
-    if (sortBy === 'prazo')      list.sort((a,b) => {
-      if (!a.deadline && !b.deadline) return 0
-      if (!a.deadline) return 1; if (!b.deadline) return -1
-      return a.deadline.localeCompare(b.deadline)
-    })
-    if (sortBy === 'criacao')    list.sort((a,b) => b.id - a.id)
-
+    list.sort((a,b) => b.id - a.id)
     return list
-  }, [projects, filter, sortBy])
+  }, [projects])
 
-  const FILTERS = [
-    { id:'todos',      label:'Todos', count: projects.length },
-    { id:'ativos',     label:'Ativos', count: projects.filter(p=>p.status==='andamento').length },
-    { id:'planejando', label:'Planejando', count: projects.filter(p=>p.status==='planejando').length },
-    { id:'concluidos', label:'Feitos', count: projects.filter(p=>p.status==='concluido').length },
-  ]
+  const [pinnedProjects, setPinnedProjects] = useState(() => load('nex_pinned_projects', []))
+  const [pinnedOpen, setPinnedOpen] = useState(false)
+  const [swipedId, setSwipedId] = useState(null)
+  const [touchStart, setTouchStart] = useState(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [showSwipeGuide, setShowSwipeGuide] = useState(() => {
+    const seen = localStorage.getItem('nex_swipe_guide_seen')
+    return !seen && pinnedProjects.length > 0
+  })
+  const [viewMode, setViewMode] = useState('list')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [displayLimit, setDisplayLimit] = useState(3)
+  const [bannerOpen, setBannerOpen] = useState(false)
+
+  const filteredProjects = useMemo(() => {
+    if (!searchQuery.trim()) return shown
+    const q = searchQuery.toLowerCase()
+    return shown.filter(p => 
+      p.title?.toLowerCase().includes(q) || 
+      p.category?.toLowerCase().includes(q) ||
+      p.desc?.toLowerCase().includes(q)
+    )
+  }, [shown, searchQuery])
+
+  const pinnedProjectsList = useMemo(() => {
+    return pinnedProjects.map(id => projects.find(p => p.id === id)).filter(Boolean)
+  }, [projects, pinnedProjects])
+
+  function togglePin(id) {
+    if (pinnedProjects.includes(id)) {
+      const newPinned = pinnedProjects.filter(pid => pid !== id)
+      setPinnedProjects(newPinned)
+      save('nex_pinned_projects', newPinned)
+    } else {
+      const newPinned = [...pinnedProjects, id]
+      setPinnedProjects(newPinned)
+      save('nex_pinned_projects', newPinned)
+      if (!localStorage.getItem('nex_swipe_guide_seen')) {
+        localStorage.setItem('nex_swipe_guide_seen', 'true')
+        setShowSwipeGuide(false)
+      }
+    }
+  }
 
   return (
     <main className={styles.page}>
-
-      {/* Intro — aparece automático quando vazio, ou via botão ? */}
-      {(projects.length === 0 || showHelp) && (
-        <div className="card" style={{ borderLeft: '4px solid var(--gold-dk)', paddingLeft: 12, position: 'relative' }}>
-          {showHelp && projects.length > 0 && (
-            <button type="button" className="btn" style={{ position: 'absolute', top: 8, right: 8, padding: '3px 6px' }}
-              onClick={() => setShowHelp(false)}>
-              <PiXBold size={12}/>
-            </button>
-          )}
-          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', marginBottom: 4 }}>Projetos & Metas de Vida</p>
-          <p style={{ fontSize: 12, color: 'var(--ink3)', lineHeight: 1.6, marginBottom: 8 }}>
-            Seus projetos pessoais de médio e longo prazo — aprender um idioma, escrever um livro,
-            completar uma maratona. Diferente de Carreira, aqui é sobre quem você quer se tornar como pessoa.
+      
+      {/* Header Card */}
+      <div className={styles.headerCard}>
+        <div className={styles.headerLabel}>PROJETOS & METAS</div>
+        <div className={styles.headerContent}>
+          <div className={styles.headerTitle}>O que você quer realizar?</div>
+          <div className={styles.headerSub}>Defina objetivos de médio e longo prazo</div>
+        </div>
+        <button className={styles.headerAction} onClick={() => handleOpenForm()}>
+          <PiPlusBold size={14}/> CRIAR
+        </button>
+      </div>
+      
+      {/* Banner - always visible */}
+      <div className={styles.banner}>
+        <div className={styles.bannerHeader} onClick={() => setBannerOpen(!bannerOpen)}>
+          <div className={styles.bannerTitle}>
+            <PiCrownBold size={16} color="var(--gold)"/>
+            <span>Projetos & Metas de Vida</span>
+          </div>
+          <span className={`${styles.bannerChevron} ${bannerOpen ? styles.bannerChevronOpen : ''}`}>
+            <PiCaretDownBold size={16}/>
+          </span>
+        </div>
+        {bannerOpen && (
+          <div className={styles.bannerContent}>
+          <p className={styles.bannerDesc}>
+            Defina objetivos de médio e longo prazo. Diferente de Carreira, aqui é sobre quem você quer se tornar.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {[
-              { n: 1, text: 'Crie um projeto com título, prazo e prioridade' },
-              { n: 2, text: 'Adicione marcos para dividir o objetivo em etapas' },
-              { n: 3, text: 'Atualize o status conforme avança (Planejando → Em andamento → Concluído)' },
-            ].map(s => (
-              <div key={s.n} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                <span style={{ fontSize: 10, fontWeight: 800, background: 'var(--ink)', color: 'var(--bg)', borderRadius: 3, padding: '1px 5px', flexShrink: 0, marginTop: 1 }}>{s.n}</span>
-                <span style={{ fontSize: 11, color: 'var(--ink3)', lineHeight: 1.5 }}>{s.text}</span>
-              </div>
-            ))}
+          <div className={styles.bannerExamples}>
+            <button className={styles.bannerTag} onClick={() => handleOpenForm('Saúde')}><PiHeartBold size={14}/> Saúde</button>
+            <button className={styles.bannerTag} onClick={() => handleOpenForm('Idioma')}><PiGlobeBold size={14}/> Idioma</button>
+            <button className={styles.bannerTag} onClick={() => handleOpenForm('Arte')}><PiPaintBrushBold size={14}/> Arte</button>
+            <button className={styles.bannerTag} onClick={() => handleOpenForm('Finanças')}><PiCurrencyDollarBold size={14}/> Finanças</button>
+            <button className={styles.bannerTag} onClick={() => handleOpenForm('Aprendizado')}><PiBookOpenBold size={14}/> Aprendizado</button>
+          </div>
+          <p className={styles.bannerHint2}>Dica: Use marcos para acompanhar seu progresso!</p>
+          <div className={styles.helpContent}>
+            <div className={styles.helpSteps}>
+              {[
+                { n: 1, text: 'Crie um projeto com título, prazo e categoria' },
+                { n: 2, text: 'Adicione marcos para dividir o objetivo em etapas' },
+                { n: 3, text: 'Atualize o status conforme avança (Planejando → Em andamento → Concluído)' },
+              ].map(s => (
+                <div key={s.n} className={styles.helpStep}>
+                  <span className={styles.helpNumber}>{s.n}</span>
+                  <span className={styles.helpText}>{s.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        )}
+      </div>
+      
+      {/* Pinned Projects */}
+      {projects.length > 0 && pinnedProjectsList.length > 0 && (
+        <div className={styles.pinnedSection}>
+          <div className={styles.pinnedHeader} onClick={() => setPinnedOpen(!pinnedOpen)}>
+            <div className={styles.pinnedTitle}>
+              <PiPushPinBold size={14} color="var(--gold)"/>
+              Fixados
+              <span className={styles.pinnedCount}>{pinnedProjectsList.length}</span>
+            </div>
+            <span className={`${styles.pinnedChevron} ${pinnedOpen ? styles.pinnedChevronOpen : ''}`}>
+              <PiCaretDownBold size={16}/>
+            </span>
+          </div>
+          {pinnedOpen && (
+            <div className={styles.pinnedList}>
+              {pinnedProjectsList.map(p => (
+                <div 
+                  key={p.id} 
+                  className={`${styles.pinnedItem} ${swipedId === `pinned_${p.id}` ? styles.pinnedItemSwiped : ''}`}
+                  onClick={() => swipedId === `pinned_${p.id}` ? setSwipedId(null) : setEditing(p.id)}
+                  onTouchStart={(e) => setTouchStart(e.touches[0].clientX)}
+                  onTouchEnd={(e) => {
+                    if (!touchStart) return
+                    const diff = e.changedTouches[0].clientX - touchStart
+                    if (diff > 50) setSwipedId(`pinned_${p.id}`)
+                    else if (diff < -50) setSwipedId(null)
+                    setTouchStart(null)
+                  }}
+                >
+                  <div className={styles.pinnedItemLeft}>
+                    <span className={styles.pinnedItemTitle}>{p.title}</span>
+                  </div>
+                  {swipedId === `pinned_${p.id}` && (
+                    <div className={styles.pinnedSwipeActions}>
+                      <button className={styles.pinnedSwipeAction} onClick={(e) => { e.stopPropagation(); togglePin(p.id); setSwipedId(null) }}>
+                        <PiPushPinBold size={18}/>
+                      </button>
+                      <button className={styles.pinnedSwipeActionDelete} onClick={(e) => { e.stopPropagation(); setSwipedId(null); setConfirmDeleteId(p.id) }}>
+                        <PiTrashBold size={18}/>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Swipe Guide Overlay */}
+      {showSwipeGuide && (
+        <div className={styles.swipeGuideOverlay} onClick={() => { setShowSwipeGuide(false); localStorage.setItem('nex_swipe_guide_seen', 'true') }}>
+          <div className={styles.swipeGuide}>
+            <div className={styles.swipeGuideArrow}>👉</div>
+            <div className={styles.swipeGuideText}>
+              <strong>Deslize para a direita</strong> nos projetos para ver ações rápidas!
+            </div>
+            <div className={styles.swipeGuideHint}>Toque em qualquer lugar para fechar</div>
           </div>
         </div>
       )}
 
-      <Summary projects={projects}/>
-
       {/* Lista de projetos */}
-      <div className="card">
-        <div className="card-title">
-          <PiRocketLaunchBold size={15}/> Meus Projetos
-          {projects.length > 0 && (
-            <button type="button"
-              className={`btn ${showHelp ? 'btn-primary' : ''}`}
-              style={{ padding: '3px 7px', marginLeft: 4 }}
-              onClick={() => setShowHelp(h => !h)}
-              title="Como usar esta tela">
-              <PiQuestionBold size={12}/>
-            </button>
-          )}
-          {atLimit && limitDecided ? (
-            <button type="button" className={`btn ${styles.addBtn}`} style={{ opacity: 0.7, gap: 4 }} onClick={() => setShowModal(true)}>
-              <PiLockSimpleBold size={11}/> <PiCrownBold size={11} color="var(--gold-dk)"/>
-            </button>
-          ) : (
-            <button type="button" className={`btn btn-primary ${styles.addBtn}`} onClick={handleOpenForm}>
-              <PiPlusBold size={11}/> Novo
-            </button>
-          )}
+      <div className="card" style={{ padding: 0 }}>
+        <div className={styles.projectsHeader}>
+          <span className={styles.projectsTitle}>
+            <PiRocketLaunchBold size={15}/> Meus Projetos
+          </span>
         </div>
-
-        {showForm && <ProjectForm onSave={add} onClose={() => setShowForm(false)}/>}
 
         {showModal && (
           <PlanLimitModal
@@ -611,50 +691,90 @@ export default function Projects() {
           />
         )}
 
-        {/* Filtros + ordenação */}
-        {projects.length > 0 && (
-          <div className={styles.controls}>
-            <div className={styles.filters}>
-              {FILTERS.map(f => (
-                <button key={f.id} type="button"
-                  className={`${styles.filterBtn} ${filter===f.id ? styles.filterActive : ''}`}
-                  onClick={() => setFilter(f.id)}>
-                  {f.label}
-                  {f.count > 0 && <span className={styles.filterCount}>{f.count}</span>}
-                </button>
-              ))}
-            </div>
-            <select className={styles.sortSelect} value={sortBy} onChange={e => setSortBy(e.target.value)}>
-              <option value="prioridade">↕ Prioridade</option>
-              <option value="prazo">↕ Prazo</option>
-              <option value="criacao">↕ Mais recentes</option>
-            </select>
-          </div>
-        )}
+        {/* Campo de busca */}
+        <div className={styles.searchField}>
+          <PiMagnifyingGlassBold size={16} color="var(--ink3)"/>
+          <input 
+            type="text" 
+            placeholder="Buscar projetos..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={styles.searchInput}
+          />
+          {searchQuery && (
+            <button type="button" className={styles.searchClear} onClick={() => setSearchQuery('')}>
+              <PiXBold size={12}/>
+            </button>
+          )}
+        </div>
 
-        {/* Lista */}
-        {shown.length === 0 && !showForm ? (
-          <div className="empty-state" style={{ padding:'20px 0' }}>
-            <PiRocketLaunchBold size={32} color="var(--ink3)"/>
-            <p>
-              {projects.length === 0
-                ? 'Nenhum projeto ainda.\nDefina seu próximo objetivo.'
-                : 'Nenhum projeto neste filtro.'}
-            </p>
-            {projects.length === 0 && (
-              <button type="button" className="btn btn-primary"
-                style={{ marginTop:12, justifyContent:'center' }}
-                onClick={() => setShowForm(true)}>
-                <PiPlusBold size={13}/> Criar primeiro projeto
+        {/* Lista de projetos */}
+        {projects.length > 0 && (
+          <div className={styles.cardList} style={{ padding: '0 16px 16px' }}>
+            {filteredProjects.slice(0, displayLimit).map(p => (
+              <ProjectCard 
+                key={p.id} 
+                project={p} 
+                onUpdate={update} 
+                onDelete={del}
+                swipedId={swipedId}
+                setSwipedId={setSwipedId}
+                touchStart={touchStart}
+                setTouchStart={setTouchStart}
+                togglePin={togglePin}
+              />
+            ))}
+            {displayLimit < filteredProjects.length && (
+              <button className={styles.showMoreBtn} onClick={() => setDisplayLimit(d => d + 10)}>
+                <PiCaretDownBold size={13}/> Mostrar mais ({filteredProjects.length - displayLimit} restantes)
               </button>
             )}
           </div>
-        ) : (
-          <div className={styles.cardList}>
-            {shown.map(p => (
-              <ProjectCard key={p.id} project={p} onUpdate={update} onDelete={del}/>
-            ))}
+        )}
+
+        {/* Quick Start - Grid de opções */}
+        {(!showForm || projects.length > 0) && (
+          <div className={styles.quickStartGrid}>
+            <button className={styles.quickStartCard} onClick={() => handleOpenForm('Saúde')}>
+              <div className={styles.quickStartIcon} style={{ color: '#e74c3c' }}>
+                <PiHeartBold size={28}/>
+              </div>
+              <div className={styles.quickStartLabel}>Saúde</div>
+              <div className={styles.quickStartDesc}>Exercício, dieta, sono...</div>
+            </button>
+            <button className={styles.quickStartCard} onClick={() => handleOpenForm('Idioma')}>
+              <div className={styles.quickStartIcon} style={{ color: '#3498db' }}>
+                <PiGlobeBold size={28}/>
+              </div>
+              <div className={styles.quickStartLabel}>Idioma</div>
+              <div className={styles.quickStartDesc}>Inglês, espanhol, japonês...</div>
+            </button>
+            <button className={styles.quickStartCard} onClick={() => handleOpenForm('Arte')}>
+              <div className={styles.quickStartIcon} style={{ color: '#9b59b6' }}>
+                <PiPaintBrushBold size={28}/>
+              </div>
+              <div className={styles.quickStartLabel}>Arte</div>
+              <div className={styles.quickStartDesc}>Pintura, música, redação...</div>
+            </button>
+            <button className={styles.quickStartCard} onClick={() => handleOpenForm('Finanças')}>
+              <div className={styles.quickStartIcon} style={{ color: '#27ae60' }}>
+                <PiCurrencyDollarBold size={28}/>
+              </div>
+              <div className={styles.quickStartLabel}>Finanças</div>
+              <div className={styles.quickStartDesc}>Investimento, orçamento...</div>
+            </button>
+            <button className={`${styles.quickStartCard} ${styles.quickStartCustom}`} onClick={() => handleOpenForm()}>
+              <div className={styles.quickStartIcon} style={{ color: 'var(--gold)' }}>
+                <PiPlusBold size={28}/>
+              </div>
+              <div className={styles.quickStartLabel}>Criar Projeto Personalizado</div>
+            </button>
           </div>
+        )}
+
+        {/* Formulário de criar projeto */}
+        {showForm && (
+          <ProjectForm onSave={add} onClose={() => { setShowForm(false); setPreselectedCategory(null) }} preselectedCategory={preselectedCategory}/>
         )}
       </div>
 

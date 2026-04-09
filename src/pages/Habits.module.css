@@ -183,12 +183,35 @@
   gap: 0;
 }
 
-/* ── Habit Card ── */
+/* ══ HABIT CARD ══ */
 .habitCard {
-  margin-bottom: 0;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  border-left: 4px solid var(--pri-color, var(--gold));
+  margin-bottom: 8px;
   overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.habitCard:last-child { border-bottom: none; margin-bottom: 0; }
+.habitCard:hover { 
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+[data-theme='dark'] .habitCard,
+[data-theme='midnight'] .habitCard,
+[data-theme='dracula'] .habitCard,
+[data-theme='nord'] .habitCard {
   background: var(--white);
 }
+[data-theme='dark'] .habitCard:hover,
+[data-theme='midnight'] .habitCard:hover,
+[data-theme='dracula'] .habitCard:hover,
+[data-theme='nord'] .habitCard:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.habitHidden { opacity:.35; }
 
 .habitCard.expanded .habitHeader { border-bottom: 1.5px solid var(--border); }
 
@@ -1384,31 +1407,69 @@
 
 /* ══ HABIT CARD ══ */
 .habitCard {
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--pri-color, var(--surface)) 12%, var(--white));
-  transition: background .15s;
-  border-left: 4px solid var(--pri-color, var(--border));
-  border-radius: 16px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  border-left: 4px solid var(--pri-color, var(--gold));
   margin-bottom: 8px;
   overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 .habitCard:last-child { border-bottom: none; margin-bottom: 0; }
-.habitCard:hover { background: color-mix(in srgb, var(--pri-color, var(--surface)) 18%, var(--white)); }
+.habitCard:hover { 
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
 
 [data-theme='dark'] .habitCard,
 [data-theme='midnight'] .habitCard,
 [data-theme='dracula'] .habitCard,
 [data-theme='nord'] .habitCard {
-  background: color-mix(in srgb, var(--pri-color, var(--surface)) 22%, var(--white));
+  background: var(--white);
 }
 [data-theme='dark'] .habitCard:hover,
 [data-theme='midnight'] .habitCard:hover,
 [data-theme='dracula'] .habitCard:hover,
 [data-theme='nord'] .habitCard:hover {
-  background: color-mix(in srgb, var(--pri-color, var(--surface)) 30%, var(--white));
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 .habitHidden { opacity:.35; }
-.habitHidden:hover { opacity:.6; }
+
+/* Search Field */
+.searchField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--ink);
+  outline: none;
+}
+
+.searchInput::placeholder { color: var(--ink3); }
+
+.searchClear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink3);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  transition: color .12s;
+}
+.searchClear:hover { color: var(--ink); }
 
 .taskRow { display:flex; align-items:flex-start; gap:10px; padding:10px 4px; }
 
@@ -1679,25 +1740,23 @@
 .ioChip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  font-size: 10px;
-  font-weight: 700;
+  gap: 3px;
+  padding: 4px 6px;
+  font-size: 9px;
+  font-weight: 600;
   color: var(--ink3);
   background: var(--white);
-  border: 1.5px solid var(--border);
-  border-radius: 3px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
   cursor: pointer;
   font-family: var(--font-body);
   transition: all .12s;
   letter-spacing: .3px;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
 }
 
-@media (hover: none) and (pointer: coarse) {
-  .ioChip { padding: 6px 12px; font-size: 11px; }
-}
 .ioChip:hover {
   border-color: var(--gold-dk);
   color: var(--gold-dk);
@@ -2262,45 +2321,49 @@
 
 .quickBtnRow {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: wrap;
   margin-top: 2px;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .quickEditBtn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   background: none;
-  border: 1.5px solid var(--border);
-  border-radius: 3px;
-  padding: 4px 8px;
-  font-size: 10px;
-  font-weight: 700;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 9px;
+  font-weight: 600;
   color: var(--ink3);
   cursor: pointer;
   font-family: var(--font-body);
   transition: all .12s;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
 }
 
 .quickLinkBtn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   background: none;
-  border: 1.5px solid var(--border);
-  border-radius: 3px;
-  padding: 4px 8px;
-  font-size: 10px;
-  font-weight: 700;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 9px;
+  font-weight: 600;
   color: var(--ink3);
   cursor: pointer;
   font-family: var(--font-body);
   transition: all .12s;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
 }
 
 .quickLinkBtn:hover {
@@ -2314,26 +2377,52 @@
   border-style: dashed;
 }
 
-@media (hover: none) and (pointer: coarse) {
-  .quickEditBtn { padding: 8px 13px; font-size: 12px; }
+.quickDelBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all .12s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.quickEditBtn:hover {
-  border-color: var(--ink);
-  color: var(--ink);
-  background: var(--white);
+.quickDelBtn:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+  background: #fff5f5;
 }
 
-.quickEditBtnActive {
-  background: var(--ink);
-  color: var(--bg);
-  border-color: var(--ink);
-}
+/* Mobile styles */
+@media (max-width: 480px) {
+  .quickBtnRow {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 3px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 2px;
+  }
 
-.quickEditBtnActive:hover {
-  background: var(--ink2);
-  border-color: var(--ink2);
-  color: var(--bg);
+  .quickEditBtn,
+  .quickLinkBtn,
+  .quickDelBtn {
+    padding: 4px 5px;
+    font-size: 8px;
+    flex-shrink: 0;
+  }
+
+  .quickEditBtn svg,
+  .quickLinkBtn svg,
+  .quickDelBtn svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 /* ══════════════════════════════════════
@@ -2580,94 +2669,33 @@
   letter-spacing: .3px;
 }
 
-/* ══════════════════════════════════════
-   SEARCH BAR
- ══════════════════════════════════════ */
-.searchBar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--white);
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  padding: 8px 10px;
-  box-shadow: 2px 2px 0 var(--shadow);
-  margin-top: 8px;
-  transition: opacity 0.2s ease;
-}
+/* Mobile styles */
+@media (max-width: 480px) {
+  .quickBtnRow {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 3px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 2px;
+  }
 
-.searchBar.hidden {
-  display: none;
-}
+  .quickEditBtn,
+  .quickLinkBtn,
+  .quickDelBtn,
+  .ioChip {
+    padding: 4px 5px;
+    font-size: 8px;
+    flex-shrink: 0;
+  }
 
-.pullHint {
-  text-align: center;
-  font-size: 11px;
-  color: var(--ink3);
-  padding: 4px 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  opacity: 0.7;
-  animation: fadeInOut 2s ease;
-}
-
-@keyframes fadeInOut {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
-}
-
-.searchInput {
-  flex: 1;
-  border: none;
-  background: transparent;
-  font-size: 13px;
-  font-family: var(--font-body);
-  color: var(--ink);
-  outline: none;
-}
-
-.searchInput::placeholder { color: var(--ink3); }
-
-.searchClear {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--ink3);
-  display: flex;
-  align-items: center;
-  padding: 2px;
-  transition: color .12s;
-}
-.searchClear:hover { color: var(--ink); }
-
-/* ══════════════════════════════════════
-   QUICK DELETE BUTTON
-══════════════════════════════════════ */
-.quickDelBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 1.5px solid var(--border);
-  border-radius: 3px;
-  padding: 4px 8px;
-  color: var(--ink3);
-  cursor: pointer;
-  transition: all .12s;
-  margin-left: auto;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-@media (hover: none) and (pointer: coarse) {
-  .quickDelBtn { padding: 8px 11px; }
-}
-.quickDelBtn:hover {
-  border-color: #c0392b;
-  color: #c0392b;
-  background: #fff5f5;
+  .quickEditBtn svg,
+  .quickLinkBtn svg,
+  .quickDelBtn svg,
+  .ioChip svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 /* ══════════════════════════════════════

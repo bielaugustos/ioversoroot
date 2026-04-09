@@ -9,18 +9,20 @@
   border-bottom: 2.5px solid var(--border);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 10px;
   background: var(--bg);
   transition: background 0.3s, border-color 0.3s;
 }
 
 .logo {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: 2px;
   color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .streakPill {

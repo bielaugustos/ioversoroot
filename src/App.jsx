@@ -70,6 +70,7 @@ function Layout() {
             <Route path="/mentor"     element={<Mentor />} />
             <Route path="/career"    element={<Career />} />
             <Route path="/projects"  element={<Projects />} />
+            <Route path="/projects/:id" element={<Projects />} />
             <Route path="/rewards"   element={<Rewards />} />
             <Route path="/profile"   element={<ProfileWrapper />} />
             <Route path="*"          element={<Navigate to="/" replace />} />
