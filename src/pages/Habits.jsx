@@ -13,7 +13,7 @@ import {
   PiCheckBold, PiWarningBold,
   PiEyeBold, PiEyeSlashBold, PiCaretDownBold, PiCaretUpBold, PiTagBold, PiQuestionBold, PiBriefcaseBold,
   PiMagnifyingGlassBold, PiArchiveBold, PiArrowCounterClockwiseBold,
-  PiCopyBold,
+  PiCopyBold, PiLinkBold,
 } from 'react-icons/pi'
 import { loadStorage }   from '../services/storage'
 import { useApp }        from '../context/AppContext'
@@ -236,29 +236,34 @@ function QuickPanel({ habit, history, onEdit, onSave, onDelete }) {
           pts={habit.pts}
           onPtsChange={newPts => onSave({ ...habit, pts: newPts })}
         />
-        <div className={styles.quickLinkBtn}>
-          <button type="button"
-            className={styles.quickLinkBtn}
-            aria-label="Vincular projeto"
-            onClick={() => {
-              const newProjId = prompt('Digite o ID do projeto para vincular (ou vazio para desvincular):', habit.linkedProjectId || '')
-              if (newProjId !== null) {
-                onSave({ ...habit, linkedProjectId: newProjId || null })
-              }
-            }}
-          >
-            <PiLinkBold size={14} /> {habit.linkedProjectId ? 'Projeto' : 'Vincular'}
-          </button>
-        </div>
+        <button type="button"
+          className={styles.quickEditBtn}
+          aria-label="Editar hábito"
+          onClick={onEdit}
+        >
+          <PiPencilSimpleBold size={14} /> Editar
+        </button>
 
-        <div className={styles.quickDelBtn}>
-          <button type="button"
-            aria-label={`Excluir hábito ${habit.name}`}
-            onClick={() => { if (window.confirm(`Excluir "${habit.name}" permanentemente?`)) onDelete?.() }}
-          >
-            <PiTrashBold size={15} />
-          </button>
-        </div>
+        <button type="button"
+          className={styles.quickLinkBtn}
+          aria-label="Vincular projeto"
+          onClick={() => {
+            const newProjId = prompt('Digite o ID do projeto para vincular (ou vazio para desvincular):', habit.linkedProjectId || '')
+            if (newProjId !== null) {
+              onSave({ ...habit, linkedProjectId: newProjId || null })
+            }
+          }}
+        >
+          <PiLinkBold size={14} /> {habit.linkedProjectId ? 'Projeto' : 'Vincular'}
+        </button>
+
+        <button type="button"
+          className={styles.quickDelBtn}
+          aria-label={`Excluir hábito ${habit.name}`}
+          onClick={() => { if (window.confirm(`Excluir "${habit.name}" permanentemente?`)) onDelete?.() }}
+        >
+          <PiTrashBold size={15} />
+        </button>
       </div>
     </div>
   )
@@ -422,6 +427,7 @@ function SubtasksEditor({ subtasks, onChange }) {
 // (mesmo da tela de Perfil e Stats).
 // ══════════════════════════════════════
 function SeedPtsCard({ earnedIo, pts, onPtsChange }) {
+  const [expanded,   setExpanded]   = useState(false)
   const [tooltip,    setTooltip]    = useState(false)
   const [pressedPts, setPressedPts] = useState(null)
   const [localPts, setLocalPts] = useState(pts ?? 0)
@@ -448,63 +454,80 @@ function SeedPtsCard({ earnedIo, pts, onPtsChange }) {
   return (
     <div className={styles.ioPtsCard}>
 
-      {/* ── Nível atual ── */}
-      <div className={styles.ioLevel}>
-        <div className={styles.ioLevelIcon} style={{ color: level.color, borderColor: level.color }}>
-          <LevelIcon size={16} />
-        </div>
-        <div className={styles.ioLevelInfo}>
-          <div className={styles.ioLevelTop}>
-            <span className={styles.ioLevelName} style={{ color: level.color }}>{level.name}</span>
-            {level.nextName && (
-              <span className={styles.ioLevelNext}>→ {level.nextName}</span>
-            )}
-            {!level.nextName && (
-              <span className={styles.ioLevelMax}>nível máximo</span>
-            )}
-          </div>
-        </div>
-        <div className={styles.ioLevelHelp}>
-          <span className={styles.ioPtsSectionLabel}>Pontos IO</span>
-          <button type="button" className={`btn ${tooltip ? 'btn-primary' : ''}`}
-            style={{ padding: '4px 6px', flexShrink: 0, borderRadius: 4 }}
-            onClick={() => setTooltip(v => !v)}
-            title="O que são pontos IO?">
-            <PiQuestionBold size={12}/>
-          </button>
-        </div>
-      </div>
-
-      {tooltip && (
-        <div className={styles.ioWhisper}>
-          <p>Cada vez que você conclui este hábito, ganha <strong>{activePts} IO</strong>.</p>
-          <p style={{ marginTop: 4, opacity: 0.8 }}>Pontos IO podem ser usados no Hub IO e na Experiência.</p>
-        </div>
-      )}
-
-      <div className={styles.ptsGrid} role="group" aria-label="Selecionar pontos IO por conclusão">
-        {PTS_OPTS.map(p => (
-          <button key={p} type="button"
-            className={[
-              styles.ptsChip,
-              activePts === p && styles.ptsChipSel,
-            ].filter(Boolean).join(' ')}
-            onClick={() => handlePtsClick(p)}
-            aria-pressed={activePts === p}
-            aria-label={`${p} IO por conclusão`}>
-            {p}
-          </button>
-        ))}
-      </div>
-
-      {!activePtsSaved && (
-        <button
-          type="button"
-          className={`btn btn-primary`}
-          style={{ marginTop: 8, width: '100%', justifyContent: 'center' }}
-          onClick={() => activeSetPtsSaved(true)}>
-          <PiCheckBold size={12}/> Confirmar {activePts} IO
+      {!expanded ? (
+        <button type="button"
+          className={styles.ioPtsBtn}
+          onClick={() => setExpanded(true)}>
+          <PiTrophyBold size={13} /> Pontos IO
         </button>
+      ) : (
+        <>
+          {/* ── Nível atual ── */}
+          <div className={styles.ioLevel}>
+            <div className={styles.ioLevelIcon} style={{ color: level.color, borderColor: level.color }}>
+              <LevelIcon size={16} />
+            </div>
+            <div className={styles.ioLevelInfo}>
+              <div className={styles.ioLevelTop}>
+                <span className={styles.ioLevelName} style={{ color: level.color }}>{level.name}</span>
+                {level.nextName && (
+                  <span className={styles.ioLevelNext}>→ {level.nextName}</span>
+                )}
+                {!level.nextName && (
+                  <span className={styles.ioLevelMax}>nível máximo</span>
+                )}
+              </div>
+            </div>
+            <div className={styles.ioLevelHelp}>
+              <span className={styles.ioPtsSectionLabel}>Pontos IO</span>
+              <button type="button" className={`btn ${tooltip ? 'btn-primary' : ''}`}
+                style={{ padding: '4px 6px', flexShrink: 0, borderRadius: 4 }}
+                onClick={() => setTooltip(v => !v)}
+                title="O que são pontos IO?">
+                <PiQuestionBold size={12}/>
+              </button>
+            </div>
+          </div>
+
+          {tooltip && (
+            <div className={styles.ioWhisper}>
+              <p>Cada vez que você conclui este hábito, ganha <strong>{activePts} IO</strong>.</p>
+              <p style={{ marginTop: 4, opacity: 0.8 }}>Pontos IO podem ser usados no Hub IO e na Experiência.</p>
+            </div>
+          )}
+
+          <div className={styles.ptsGrid} role="group" aria-label="Selecionar pontos IO por conclusão">
+            {PTS_OPTS.map(p => (
+              <button key={p} type="button"
+                className={[
+                  styles.ptsChip,
+                  activePts === p && styles.ptsChipSel,
+                ].filter(Boolean).join(' ')}
+                onClick={() => handlePtsClick(p)}
+                aria-pressed={activePts === p}
+                aria-label={`${p} IO por conclusão`}>
+                {p}
+              </button>
+            ))}
+          </div>
+
+          {!activePtsSaved && (
+            <button
+              type="button"
+              className={`btn btn-primary`}
+              style={{ marginTop: 8, width: '100%', justifyContent: 'center' }}
+              onClick={() => activeSetPtsSaved(true)}>
+              <PiCheckBold size={12}/> Confirmar {activePts} IO
+            </button>
+          )}
+
+          <button
+            type="button"
+            className={styles.ioPtsClose}
+            onClick={() => setExpanded(false)}>
+            <PiCaretUpBold size={13} />
+          </button>
+        </>
       )}
 
     </div>
@@ -1043,7 +1066,6 @@ function TomorrowCard({ habit, history, onSave, onDelete, projects }) {
 // HABIT CARD
 // — borda esquerda com cor de prioridade
 // — botão +pts para concluir (tap)
-// — swipe direita para concluir (mobile)
 // — toque longo para seleção múltipla
 // — toque no card abre QuickPanel, botão editar abre EditPanel
 // ══════════════════════════════════════
@@ -1052,13 +1074,9 @@ function HabitCard({ habit, history, onToggle, onSave, onDelete, selecting, sele
   const [editMode,   setEditMode]   = useState(false)
   const [ptsBounce,  setPtsBounce]  = useState(false)
   const [floatKey,   setFloatKey]   = useState(0)
-  const [swipeDelta, setSwipeDelta] = useState(0)
   const [ptsFlash,   setPtsFlash]   = useState(false)
   const prevPts        = useRef(habit.pts)
   const longPressTimer = useRef(null)
-  const swipeStartX    = useRef(null)
-  const swipeStartY    = useRef(null)
-  const isSwiping      = useRef(false)
 
   useEffect(() => {
     if (habit.pts !== prevPts.current) {
@@ -1114,42 +1132,6 @@ function HabitCard({ habit, history, onToggle, onSave, onDelete, selecting, sele
     onToggle(habit.id)
   }
 
-  function onTouchStart(e) {
-    if (editMode) return  // não rastreia swipe/longpress enquanto o painel de edição está aberto
-    const t = e.touches[0]
-    swipeStartX.current = t.clientX
-    swipeStartY.current = t.clientY
-    isSwiping.current   = false
-    longPressTimer.current = setTimeout(() => onLongPress?.(), 500)
-  }
-
-  function onTouchMove(e) {
-    if (!swipeStartX.current) return
-    const t  = e.touches[0]
-    const dx = t.clientX - swipeStartX.current
-    const dy = Math.abs(t.clientY - swipeStartY.current)
-    if (!isSwiping.current && dy > 10 && dy > Math.abs(dx)) {
-      clearTimeout(longPressTimer.current)
-      swipeStartX.current = null
-      return
-    }
-    if (Math.abs(dx) > 8) {
-      isSwiping.current = true
-      clearTimeout(longPressTimer.current)
-      setSwipeDelta(Math.max(0, Math.min(90, dx)))
-    }
-  }
-
-  function onTouchEnd() {
-    clearTimeout(longPressTimer.current)
-    if (isSwiping.current && swipeDelta > 65 && !habit.done && activeToday) {
-      onToggle(habit.id)
-    }
-    setSwipeDelta(0)
-    isSwiping.current   = false
-    swipeStartX.current = null
-  }
-
   function handleExpandToggle() {
     if (selecting) { onSelect(habit.id); return }
     setExpanded(e => {
@@ -1161,32 +1143,16 @@ function HabitCard({ habit, history, onToggle, onSave, onDelete, selecting, sele
   return (
     <article
       className={[styles.habitCard, selected && styles.habitSelected].filter(Boolean).join(' ')}
-      style={{ '--pri-color': priColor, position: 'relative', overflow: 'hidden' }}
+      style={{ '--pri-color': priColor }}
     >
-      {/* Indicador de swipe */}
-      <div className={styles.swipeUnderlay} style={{ opacity: Math.min(1, swipeDelta / 65) }}>
-        <PiCheckBold size={16} color="#fff" />
-      </div>
-
-      {/* Conteúdo deslizável */}
+      {/* ── Linha principal ── */}
       <div
-        className={styles.swipeInner}
-        style={{ transform: `translateX(${swipeDelta}px)`, transition: swipeDelta === 0 ? 'transform .2s ease' : 'none' }}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onMouseDown={() => { if (!editMode) longPressTimer.current = setTimeout(() => onLongPress?.(), 500) }}
-        onMouseUp={() => clearTimeout(longPressTimer.current)}
-        onMouseLeave={() => clearTimeout(longPressTimer.current)}
+        className={styles.taskRow}
+        onClick={handleExpandToggle}
+        role="button" tabIndex={0}
+        onKeyDown={e => e.key === 'Enter' && handleExpandToggle()}
+        aria-expanded={expanded}
       >
-        {/* ── Linha principal ── */}
-        <div
-          className={styles.taskRow}
-          onClick={handleExpandToggle}
-          role="button" tabIndex={0}
-          onKeyDown={e => e.key === 'Enter' && handleExpandToggle()}
-          aria-expanded={expanded}
-        >
           {/* Botão +pts */}
           <div className={styles.ptsBtnWrap}>
             <button
@@ -1284,8 +1250,7 @@ function HabitCard({ habit, history, onToggle, onSave, onDelete, selecting, sele
             />
           </div>
         )}
-      </div>
-    </article>
+      </article>
   )
 }
 

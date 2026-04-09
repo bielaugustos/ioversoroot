@@ -417,12 +417,14 @@
 }
 
 .ptsChip {
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 0.5px solid var(--border);
+  flex: 1;
+  min-width: 50px;
+  padding: 10px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
   background: var(--surface);
   color: var(--ink);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -1630,6 +1632,52 @@
   background: var(--white);
 }
 
+.ioPtsBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--bg);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink2);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all .15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.ioPtsBtn:hover {
+  background: var(--white);
+}
+
+.ioPtsClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 4px;
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all .15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ioPtsClose:hover {
+  background: var(--white);
+  color: var(--ink);
+}
+
 /* Nível row */
 .ioLevel {
   display: flex;
@@ -2321,49 +2369,70 @@
 
 .quickBtnRow {
   display: flex;
+  flex-direction: column;
   gap: 4px;
-  flex-wrap: wrap;
   margin-top: 2px;
-  justify-content: flex-start;
-  align-items: center;
+}
+
+.ioPtsBtn {
+  width: 100%;
+}
+
+.quickEditBtn,
+.quickLinkBtn,
+.quickDelBtn,
+.ioPtsClose {
+  width: 100%;
 }
 
 .quickEditBtn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 3px;
+  justify-content: center;
+  gap: 6px;
   background: none;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 4px 6px;
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--ink3);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink2);
   cursor: pointer;
   font-family: var(--font-body);
-  transition: all .12s;
+  transition: all .15s;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   white-space: nowrap;
+  background: var(--bg);
+}
+
+.quickEditBtn:hover {
+  background: var(--white);
 }
 
 .quickLinkBtn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 3px;
+  justify-content: center;
+  gap: 6px;
   background: none;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 4px 6px;
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--ink3);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink2);
   cursor: pointer;
   font-family: var(--font-body);
-  transition: all .12s;
+  transition: all .15s;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   white-space: nowrap;
+  background: var(--bg);
+}
+
+.quickLinkBtn:hover {
+  background: var(--white);
 }
 
 .quickLinkBtn:hover {
@@ -2378,50 +2447,56 @@
 }
 
 .quickDelBtn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   background: none;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 4px 6px;
-  color: var(--ink3);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 8px;
+  color: var(--danger);
   cursor: pointer;
-  transition: all .12s;
+  transition: all .15s;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  background: var(--bg);
 }
 
 .quickDelBtn:hover {
-  border-color: #c0392b;
-  color: #c0392b;
-  background: #fff5f5;
+  background: #fef2f2;
 }
 
 /* Mobile styles */
 @media (max-width: 480px) {
   .quickBtnRow {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 3px;
-    overflow-x: auto;
-    justify-content: flex-start;
-    padding-bottom: 2px;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .quickEditBtn,
   .quickLinkBtn,
-  .quickDelBtn {
-    padding: 4px 5px;
-    font-size: 8px;
-    flex-shrink: 0;
+  .quickDelBtn,
+  .ioPtsBtn,
+  .ioPtsClose {
+    width: 100%;
+    padding: 10px 8px;
+  }
+
+  .ioPtsCard {
+    padding: 8px;
+  }
+
+  .ioLevel {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .quickEditBtn svg,
   .quickLinkBtn svg,
   .quickDelBtn svg {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
   }
 }
 
