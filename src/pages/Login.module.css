@@ -1,20 +1,125 @@
-/* src/pages/Login.module.css */
+/* src/pages/Login.module.css - Neobrutalism Style (Amber) */
+
+:root {
+  --neo-border: 2px solid #000;
+  --neo-shadow: 3px 3px 0 #000;
+  --neo-shadow-sm: 2px 2px 0 #000;
+  --neo-yellow: #F59E0B;
+  --neo-yellow-light: #FEF3C7;
+  --neo-pink: #F472B6;
+  --neo-blue: #60A5FA;
+  --neo-green: #34D399;
+  --neo-white: #fff;
+  --neo-bg: #FFFBEB;
+}
 
 .page {
   min-height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
-  background: var(--bg);
+  padding: 40px 24px;
+  gap: 20px;
+  background: var(--neo-bg);
 }
 
 .card {
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
+  background: var(--neo-white);
+  border: var(--neo-border);
+  box-shadow: var(--neo-shadow);
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+}
+
+/* Mobile smaller sizes */
+@media (max-width: 480px) {
+  .page {
+    padding: 32px 20px;
+    gap: 16px;
+  }
+  
+  .card {
+    padding: 16px 14px;
+    gap: 12px;
+  }
+  
+  .logoImg {
+    width: 36px !important;
+  }
+  
+  .logoWrap {
+    padding: 6px 0;
+  }
+  
+  .toggleBtn {
+    padding: 8px 0;
+    font-size: 11px;
+  }
+  
+  .input {
+    padding: 10px;
+    font-size: 13px;
+  }
+  
+  .label {
+    font-size: 10px;
+  }
+  
+  .submitBtn {
+    padding: 10px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  
+  .skipBtn {
+    padding: 8px;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  
+  .privacyAlert {
+    padding: 8px;
+    font-size: 10px;
+    gap: 6px;
+  }
+  
+  .privacyAlert svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .forgotBtn {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+  
+  .divider {
+    font-size: 10px;
+    gap: 8px;
+  }
+  
+  .backBtn {
+    font-size: 12px;
+  }
+  
+  .eyeBtn {
+    padding: 4px;
+  }
+  
+  .eyeBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .error, .success {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
 }
 
 @media (min-width: 600px) {
@@ -22,123 +127,169 @@
     padding: 40px 24px;
   }
   .card {
-    max-width: 400px;
+    max-width: 420px;
+    padding: 40px 32px;
   }
 }
 
-/* ── Marca ── */
-.brand {
+/* ── Logo ── */
+.logoWrap {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-.brandLogo {
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.brandText {
-  display: flex;
-  flex-direction: column;
-}
-.brandName {
-  font-family: var(--font-display);
-  font-size: 24px;
-  color: var(--ink);
-  letter-spacing: -1px;
+  justify-content: center;
+  padding: 10px 0;
 }
 
-.brandName strong { font-weight: 800; letter-spacing: 2px; }
-
-.brandSub {
-  font-size: 11px;
-  color: var(--ink3);
-  letter-spacing: -0.5px;
-  font-weight: 800;
+.logoImg {
+  width: 50px;
+  height: auto;
 }
 
-/* ── Toggle ── */
+/* ── Toggle Neobrutalism ── */
 .toggle {
   display: flex;
-  border: 2px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
+  border: var(--neo-border);
+  background: var(--neo-white);
 }
+
 .toggleBtn {
   flex: 1;
-  padding: 9px 0;
-  font-size: 12px;
+  padding: 12px 0;
+  font-size: 14px;
   font-weight: 700;
   font-family: var(--font-body);
-  background: var(--white);
-  color: var(--ink3);
+  background: var(--neo-white);
+  color: #666;
   border: none;
   cursor: pointer;
-  transition: all .15s;
+  transition: all .1s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
+
+.toggleBtn:hover {
+  background: #f9f9f9;
+}
+
 .toggleActive {
-  background: var(--ink);
-  color: var(--white);
+  background: var(--neo-yellow);
+  color: #000;
 }
 
 /* ── Formulário ── */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
+
 .field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
+
 .label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--ink2);
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 1px;
 }
+
+.input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-family: var(--font-body);
+  border: var(--neo-border);
+  background: var(--neo-white);
+  color: #000;
+  box-shadow: var(--neo-shadow-sm);
+  transition: all .1s;
+  box-sizing: border-box;
+  border-radius: 4px;
+}
+
+.input::placeholder {
+  color: #999;
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: var(--neo-shadow);
+}
+
+/* Neobrutalism Error */
 .error {
-  font-size: 12px;
-  color: #c0392b;
-  background: #fdf0ef;
-  border: 1px solid #f5c6c2;
-  border-radius: 4px;
-  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: #EF4444;
+  border: var(--neo-border);
+  padding: 12px 14px;
+  box-shadow: var(--neo-shadow-sm);
 }
+
+/* Neobrutalism Success */
 .success {
-  font-size: 12px;
-  color: #1a6b3c;
-  background: #edfaf3;
-  border: 1px solid #b2dfc6;
-  border-radius: 4px;
-  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #000;
+  background: var(--neo-green);
+  border: var(--neo-border);
+  padding: 12px 14px;
+  box-shadow: var(--neo-shadow-sm);
 }
+
+/* ── Neobrutalism Buttons ── */
 .submitBtn {
   width: 100%;
   justify-content: center;
-  padding: 12px;
-  font-size: 13px;
-  margin-top: 4px;
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: var(--neo-border);
+  background: var(--neo-yellow);
+  color: #000;
+  box-shadow: var(--neo-shadow);
+  cursor: pointer;
+  transition: all .1s;
+  border-radius: 4px;
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #000;
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 #000;
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ── Botão voltar (modo reset) ── */
 .backBtn {
   background: none;
   border: none;
-  color: var(--ink2);
-  font-size: 12px;
+  color: #666;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 0;
   margin-bottom: 4px;
-  transition: color .15s;
+  text-decoration: underline;
 }
-.backBtn:hover { color: var(--ink); }
+.backBtn:hover { color: #000; }
 
 /* ── Campo senha ── */
 .passwordWrap {
@@ -146,67 +297,255 @@
 }
 .passwordWrap .input {
   width: 100%;
-  padding-right: 40px;
+  padding-right: 44px;
 }
 .eyeBtn {
   position: absolute;
-  right: 10px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
-  border: none;
+  background: var(--neo-yellow-light);
+  border: 2px solid #000;
   cursor: pointer;
-  color: var(--ink3);
+  color: #000;
   display: flex;
   align-items: center;
-  padding: 0;
+  padding: 6px;
+  box-shadow: 2px 2px 0 #000;
+  border-radius: 4px;
 }
-.eyeBtn:hover { color: var(--ink); }
+.eyeBtn:hover { background: var(--neo-yellow); }
 
 /* ── Divider ── */
 .divider {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: var(--ink3);
-  font-size: 11px;
+  gap: 12px;
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 .divider::before,
 .divider::after {
   content: '';
   flex: 1;
-  height: 1px;
-  background: var(--border);
+  height: 2px;
+  background: #000;
 }
 
-/* ── Skip ── */
+/* ── Skip / Secondary Button ── */
 .skipBtn {
   width: 100%;
   justify-content: center;
-  padding: 11px;
-  font-size: 12px;
-  border: 2px solid var(--border);
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: var(--neo-border);
+  background: var(--neo-white);
+  color: #333;
+  box-shadow: var(--neo-shadow-sm);
+  cursor: pointer;
+  border-radius: 4px;
 }
-.skipBtn:hover { border-color: var(--ink2); }
+.skipBtn:hover {
+  background: var(--neo-yellow-light);
+}
 
 /* ── Esqueceu senha ── */
 .forgotBtn {
-  background: none;
-  border: none;
-  color: var(--ink2);
-  font-size: 11px;
+  background: var(--neo-yellow-light);
+  border: var(--neo-border);
+  color: #333;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  padding: 0;
-  text-decoration: underline;
-  transition: color .15s;
+  padding: 10px 16px;
+  box-shadow: var(--neo-shadow-sm);
+  display: block;
+  text-align: center;
+  border-radius: 4px;
 }
-.forgotBtn:hover { color: var(--ink); }
+.forgotBtn:hover {
+  background: var(--neo-yellow);
+}
 
-/* ── Nota de privacidade ── */
+/* ── Privacy ── */
 .privacyNote {
   font-size: 11px;
-  color: var(--ink3);
+  color: #666;
   text-align: center;
   line-height: 1.5;
+  font-weight: 500;
+}
+
+/* ── Privacy Alert ── */
+.privacyAlert {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--neo-yellow-light);
+  border: var(--neo-border);
+  padding: 10px;
+  font-size: 10px;
+  color: #333;
+  line-height: 1.4;
+  box-shadow: var(--neo-shadow-sm);
+}
+
+.privacyAlert svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  width: 16px;
+  height: 16px;
+}
+
+@media (min-width: 600px) {
+  .privacyAlert {
+    max-width: 420px;
+  }
+}
+
+.privacyAlert svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.privacyAlert p {
+  margin: 0;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.linkBtn:hover {
+  color: var(--neo-yellow);
+}
+
+.linkBtn strong {
+  font-weight: 700;
+}
+
+/* ── Drawer ── */
+.drawerOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.drawer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: var(--neo-white);
+  border-top: var(--neo-border);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.drawerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 2px solid #000;
+}
+
+.drawerHeader h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.drawerClose {
+  background: var(--neo-pink);
+  border: 2px solid #000;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--neo-shadow-sm);
+}
+
+.drawerClose:hover {
+  background: var(--neo-yellow);
+}
+
+.drawerContent {
+  padding: 14px;
+  overflow-y: auto;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.drawerHeader h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.drawerClose {
+  background: var(--neo-pink);
+  border: 2px solid #000;
+  width: 28px;
+  height: 28px;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--neo-shadow-sm);
+}
+
+.drawerClose:hover {
+  background: var(--neo-yellow);
+}
+
+.drawerContent {
+  padding: 16px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #333;
 }
